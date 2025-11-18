@@ -40,8 +40,8 @@ function Message({ message, fromSelf, sender }) {
               <code>{message.replace(/```/g, "")}</code>
             </pre>
           ) : (
-            <p className="text-base leading-relaxed whitespace-pre-line break-words">
-              {message}
+            <p className="text-base leading-relaxed whitespace-pre-line break-words min-w-12">
+              {message.trim()}
             </p>
           )}
         </div>
