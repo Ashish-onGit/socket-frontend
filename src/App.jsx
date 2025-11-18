@@ -109,7 +109,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className="bg-gradient-to-b from-[#2e026d] via-[#1a1a1a] to-black">
       {step === "login" && (
         <Login
           onLogin={handleLogin}
