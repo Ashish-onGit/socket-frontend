@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
+// import React, { useEffect, useRef, useState } from "reactsocket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import {
   loginSuccess,
@@ -11,10 +11,9 @@ import Register from "./components/Register";
 import Chat from "./components/Chat";
 import "./App.css";
 
+
 const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 const socket = io(backendURL);
-
-// const socket = io("http://localhost:3001");
 
 function App() {
   const dispatch = useDispatch();
@@ -22,7 +21,9 @@ function App() {
   const chat = useSelector((state) => state.chat.messages);
   const [step, setStep] = useState(user ? "chat" : "login");
   const [message, setMessage] = useState("");
+  const [typingUser, setTypingUser] = useState(""); // ✅ Typing indicator state
   const myId = useRef("");
+  // console.log(typingUser,"from app")
 
   useEffect(() => {
     socket.on("connect", () => {
@@ -30,29 +31,26 @@ function App() {
     });
 
     socket.on("receive_message", (data) => {
-      // Guard against null user
-      if (user?.username) {
-        dispatch(
-          addMessage({
-            message: data.message,
-            sender: data.sender,
-            fromSelf: data.sender === user.username,
-          })
-        );
-      } else {
-        dispatch(
-          addMessage({
-            message: data.message,
-            sender: data.sender,
-            fromSelf: false,
-          })
-        );
-      }
+      dispatch(
+        addMessage({
+          message: data.message,
+          sender: data.sender,
+          fromSelf: data.sender === user?.username,
+        })
+      );
     });
+
+    // ✅ Listen for typing events
+    socket.on("show_typing", (username) => setTypingUser(`${username} is typing...`));
+    socket.on("hide_typing", () => setTypingUser(""));
+
+
 
     return () => {
       socket.off("connect");
       socket.off("receive_message");
+      socket.off("show_typing");
+      socket.off("hide_typing");
     };
   }, [dispatch, user]);
 
@@ -96,6 +94,7 @@ function App() {
   const sendMessage = () => {
     if (message.trim()) {
       socket.emit("send_message", { message, username: user.username });
+      socket.emit("stop_typing"); // ✅ Stop typing when message sent
       setMessage("");
     }
   };
@@ -129,9 +128,18 @@ function App() {
           username={user.username}
           chat={chat}
           message={message}
-          setMessage={setMessage}
+          setMessage={(val) => {
+            setMessage(val);
+            // console.log("Emitting typing event with username:", user?.username);
+            socket.emit("typing", user.username); 
+            clearTimeout(window.typingTimeout);
+            window.typingTimeout = setTimeout(() => {
+              socket.emit("stop_typing");
+            }, 1000);
+          }}
           sendMessage={sendMessage}
           onLogout={onLogout}
+          typingUser={typingUser} 
         />
       )}
     </div>
@@ -139,3 +147,4 @@ function App() {
 }
 
 export default App;
+import { io } from "socket.io-client";
