@@ -48,27 +48,9 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
     };
   }, [showEmojiPicker]);
 
-  // ✅ Adjust input container position when keyboard opens
-  useEffect(() => {
-    const adjustForKeyboard = () => {
-      const viewport = window.visualViewport;
-      if (viewport) {
-        const inputContainer = document.querySelector(".input-container");
-        if (inputContainer) {
-          const offset = viewport.height - window.innerHeight;
-          inputContainer.style.bottom = `${offset > 0 ? offset : 0}px`;
-        }
-      }
-    };
-
-    window.visualViewport?.addEventListener("resize", adjustForKeyboard);
-    return () => {
-      window.visualViewport?.removeEventListener("resize", adjustForKeyboard);
-    };
-  }, []);
-
   return (
-    <div className="h-screen flex flex-col text-gray-100 radial-bg">
+    // NOTE: min-h-[100dvh] + overflow-x-hidden to avoid white strip & vh issues
+    <div className="min-h-[100dvh] flex flex-col text-gray-100 radial-bg overflow-x-hidden">
       {/* Header */}
       <div className="sticky top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
         <h2 className="text-xl font-semibold">Hey, {username}</h2>
@@ -101,7 +83,18 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
       </div>
 
       {/* Input Area */}
-      <div className="input-container sticky bottom-0 flex items-center gap-2 bg-white dark:bg-gray-900 p-3 rounded-full shadow-lg mx-4 mb-4 transition-all duration-300">
+      <div
+        className="
+          input-container
+          sticky bottom-0 left-0 right-0
+          flex items-center gap-2
+          bg-white dark:bg-gray-900
+          p-3 mx-4 mb-4
+          rounded-full shadow-lg
+          transition-all duration-300
+          pb-[env(safe-area-inset-bottom)]
+        "
+      >
         <input
           type="text"
           value={message}
