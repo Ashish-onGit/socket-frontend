@@ -1,5 +1,18 @@
 /* client/src/App.css */
 @import "tailwindcss";
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  /* match your radial-bg base color */
+  background: #020015; 
+  overflow-x: hidden;    /* <– important */
+}
 .radial-bg {
     background: radial-gradient(circle at center, rgba(128,0,128,0.3), transparent 70%);
 }
