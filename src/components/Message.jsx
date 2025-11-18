@@ -1,19 +1,55 @@
-// src/components/Message.js
 import React from 'react';
+import { FiCopy } from 'react-icons/fi';
 
 function Message({ message, fromSelf, sender }) {
+  const isCode = message.startsWith('```');
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.replace(/```/g, ''));
+    alert('Message copied to clipboard!');
+  };
+
   return (
     <div
-      className={`mb-3 p-4 rounded-xl max-w-[40%]  break-words
-        ${fromSelf
-          ? 'bg-blue-600 text-white ml-auto text-right shadow-lg hover:bg-blue-700 transition-colors duration-200'
-          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 mr-auto text-left shadow-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200'}`}
-      style={{ wordBreak: 'break-word' }}
+      className={`flex mb-3 items-end ${
+        fromSelf ? 'justify-end' : 'justify-start'
+      }`}
     >
-      <strong className="block mb-2 text-sm opacity-75">
-        {fromSelf ? 'Me' : sender}:
-      </strong>
-      <span className="text-base leading-relaxed">{message}</span>
+      {/* Chat Bubble + Copy Button Container */}
+      <div
+        className={`flex flex-col ${
+          fromSelf ? 'items-end' : 'items-start'
+        }`}
+      >
+        {/* Chat Bubble */}
+        <div
+          className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-md break-words whitespace-pre-wrap ${
+            fromSelf
+              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
+          }`}
+        >
+          {!fromSelf && (
+            <p className="text-xs font-semibold mb-1 opacity-80">{sender}</p>
+          )}
+          {isCode ? (
+            <pre className="bg-black text-green-400 p-3 rounded-lg overflow-x-auto text-sm font-mono">
+              <code>{message.replace(/```/g, '')}</code>
+            </pre>
+          ) : (
+            <p className="text-base leading-relaxed">{message}</p>
+          )}
+        </div>
+
+        {/* Copy Button */}
+        <button
+          onClick={handleCopy}
+          className={`mt-2 p-2 rounded-full  hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-white transition`}
+          title="Copy message"
+        >
+          <FiCopy size={18} />
+        </button>
+      </div>
     </div>
   );
 }
