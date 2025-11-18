@@ -1,53 +1,143 @@
-// src/components/Chat.jsx
-import React from 'react';
-import { useSelector } from 'react-redux';
-import Message from './Message';
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import Message from "./Message";
+import { FiLogOut } from "react-icons/fi";
+import { IoSend } from "react-icons/io5";
+import EmojiPicker from "emoji-picker-react";
 
 function Chat({ message, setMessage, sendMessage, onLogout }) {
   const username = useSelector((state) => state.auth.user?.username);
   const chat = useSelector((state) => state.chat.messages);
+  const messagesEndRef = useRef(null);
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef(null);
+
+  // Scroll to latest message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chat]);
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && message.trim() !== "") {
+      sendMessage();
+    }
+  };
+
+  const handleEmojiClick = (emojiData) => {
+    setMessage((prev) => prev + emojiData.emoji);
+  };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target) &&
+        showEmojiPicker
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
+  // ✅ Adjust input container position when keyboard opens
+  useEffect(() => {
+    const adjustForKeyboard = () => {
+      const viewport = window.visualViewport;
+      if (viewport) {
+        const inputContainer = document.querySelector(".input-container");
+        if (inputContainer) {
+          const offset = viewport.height - window.innerHeight;
+          inputContainer.style.bottom = `${offset > 0 ? offset : 0}px`;
+        }
+      }
+    };
+
+    window.visualViewport?.addEventListener("resize", adjustForKeyboard);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", adjustForKeyboard);
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col max-w-3xl mx-auto p-4 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Welcome, {username}</h2>
+    <div className="h-screen flex flex-col text-gray-100 radial-bg">
+      {/* Header */}
+      <div className="sticky top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
+        <h2 className="text-xl font-semibold">Hey, {username}</h2>
         <button
           onClick={onLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition"
+          aria-label="Logout"
+          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition"
         >
-          Logout
+          <FiLogOut size={20} />
         </button>
       </div>
 
-      <div className="flex-grow overflow-y-auto mb-4 p-4 bg-white dark:bg-gray-800 rounded shadow-inner max-h-[60vh]">
+      {/* Chat Messages */}
+      <div className="flex-grow overflow-y-auto p-4 rounded-3xl shadow-inner my-4 pt-4">
         {chat.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400">No messages yet</p>
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            No messages yet
+          </p>
         ) : (
           chat.map((msg, idx) => (
             <Message
               key={idx}
               message={msg.message}
               fromSelf={msg.fromSelf}
-              sender={msg.sender || 'Unknown'}
+              sender={msg.sender || "Unknown"}
             />
           ))
         )}
+        <div ref={messagesEndRef}></div>
       </div>
-      
-      <div className="flex space-x-2">
+
+      {/* Input Area */}
+      <div className="input-container sticky bottom-0 flex items-center gap-2 bg-white dark:bg-gray-900 p-3 rounded-full shadow-lg mx-4 mb-4 transition-all duration-300">
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type message..."
-          className="flex-grow p-3 rounded border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onKeyDown={handleKeyPress}
+          placeholder="Type here..."
+          className="flex-grow p-3 pl-4 rounded-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
         />
+
+        {/* Emoji Button */}
+        <button
+          onClick={() => setShowEmojiPicker((prev) => !prev)}
+          aria-label="Emoji Picker"
+          className="p-2 rounded-full text-3xl hover:bg-gray-200 dark:hover:bg-gray-700"
+        >
+          ☺
+        </button>
+
+        {/* Send Button */}
         <button
           onClick={sendMessage}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded transition"
+          aria-label="Send Message"
+          className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-2 rounded-full transition"
         >
-          Send
+          <IoSend size={22} />
         </button>
+
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <div
+            ref={emojiPickerRef}
+            className="absolute bottom-20 right-6 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+          >
+            <EmojiPicker onEmojiClick={handleEmojiClick} />
+          </div>
+        )}
       </div>
     </div>
   );
