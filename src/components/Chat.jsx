@@ -1,17 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import Message from "./Message";
 import { FiLogOut } from "react-icons/fi";
 import { IoSend } from "react-icons/io5";
 import EmojiPicker from "emoji-picker-react";
 
-function Chat({ message, setMessage, sendMessage, onLogout }) {
-  const username = useSelector((state) => state.auth.user?.username);
-  const chat = useSelector((state) => state.chat.messages);
-
+function Chat({ username, chat, message, setMessage, sendMessage, onLogout, typingUser }) {
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const inputBarRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
@@ -23,14 +20,31 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
   }, [chat]);
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && message.trim() !== "") {
-      sendMessage();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (message.trim() !== "") {
+        sendMessage();
+      }
     }
   };
 
   const handleEmojiClick = (emojiData) => {
     setMessage((prev) => prev + emojiData.emoji);
   };
+
+  // Auto-resize textarea but cap at max height
+  const handleInputResize = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      const newHeight = Math.min(textarea.scrollHeight, 96); // 96px ≈ 3 rows
+      textarea.style.height = `${newHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    handleInputResize();
+  }, [message]);
 
   // Close emoji picker when clicking outside
   useEffect(() => {
@@ -50,35 +64,7 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
     };
   }, [showEmojiPicker]);
 
-  // Keep input bar above mobile keyboard (for browsers that support visualViewport)
-  useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport || !inputBarRef.current) return;
-
-    const updateBottom = () => {
-      if (!inputBarRef.current) return;
-
-      // How much of the screen is taken by keyboard / browser UI
-      const offset =
-        window.innerHeight - viewport.height - viewport.offsetTop;
-
-      const safeOffset = offset > 0 ? offset : 0;
-      inputBarRef.current.style.bottom = `${safeOffset}px`;
-    };
-
-    // Run once and on changes
-    updateBottom();
-    viewport.addEventListener("resize", updateBottom);
-    viewport.addEventListener("scroll", updateBottom);
-
-    return () => {
-      viewport.removeEventListener("resize", updateBottom);
-      viewport.removeEventListener("scroll", updateBottom);
-    };
-  }, []);
-
   return (
-    // pb-28 so messages don't hide behind the fixed input bar
     <div className="relative min-h-[100dvh] flex flex-col text-gray-100 radial-bg overflow-x-hidden pb-28">
       {/* Header */}
       <div className="sticky top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
@@ -111,7 +97,13 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
         <div ref={messagesEndRef}></div>
       </div>
 
-      {/* Input Area – fixed to viewport bottom, adjusted by visualViewport */}
+      {/* Typing Indicator */}
+      {typingUser && (
+        <div className="text-sm text-gray-400 italic px-4 pb-2">{typingUser}</div>
+      )}
+
+
+      {/* Input Area */}
       <div
         ref={inputBarRef}
         className="fixed left-0 right-0 bottom-0 w-full px-4 pb-[env(safe-area-inset-bottom)] mb-2 z-20"
@@ -123,12 +115,16 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
             p-3 rounded-full shadow-lg
           "
         >
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              handleInputResize();
+            }}
             onKeyDown={handleKeyPress}
             placeholder="Type here..."
+            rows={1}
             className="
               flex-1 min-w-0
               p-3 pl-4
@@ -136,6 +132,8 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
               bg-gray-50 dark:bg-gray-700
               text-gray-900 dark:text-white
               focus:outline-none focus:ring-1 focus:ring-purple-500
+              resize-none overflow-y-auto no-scrollbar
+              max-h-14
             "
           />
 
