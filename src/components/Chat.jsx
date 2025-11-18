@@ -8,10 +8,12 @@ import EmojiPicker from "emoji-picker-react";
 function Chat({ message, setMessage, sendMessage, onLogout }) {
   const username = useSelector((state) => state.auth.user?.username);
   const chat = useSelector((state) => state.chat.messages);
+
   const messagesEndRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+  const inputBarRef = useRef(null);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const emojiPickerRef = useRef(null);
 
   // Scroll to latest message
   useEffect(() => {
@@ -48,8 +50,36 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
     };
   }, [showEmojiPicker]);
 
+  // Keep input bar above mobile keyboard (for browsers that support visualViewport)
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport || !inputBarRef.current) return;
+
+    const updateBottom = () => {
+      if (!inputBarRef.current) return;
+
+      // How much of the screen is taken by keyboard / browser UI
+      const offset =
+        window.innerHeight - viewport.height - viewport.offsetTop;
+
+      const safeOffset = offset > 0 ? offset : 0;
+      inputBarRef.current.style.bottom = `${safeOffset}px`;
+    };
+
+    // Run once and on changes
+    updateBottom();
+    viewport.addEventListener("resize", updateBottom);
+    viewport.addEventListener("scroll", updateBottom);
+
+    return () => {
+      viewport.removeEventListener("resize", updateBottom);
+      viewport.removeEventListener("scroll", updateBottom);
+    };
+  }, []);
+
   return (
-    <div className="min-h-[100dvh] flex flex-col text-gray-100 radial-bg overflow-x-hidden">
+    // pb-28 so messages don't hide behind the fixed input bar
+    <div className="relative min-h-[100dvh] flex flex-col text-gray-100 radial-bg overflow-x-hidden pb-28">
       {/* Header */}
       <div className="sticky top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
         <h2 className="text-xl font-semibold">Hey, {username}</h2>
@@ -63,7 +93,7 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto p-4 rounded-3xl shadow-inner my-4 pt-4">
+      <div className="flex-grow overflow-y-auto p-4 rounded-3xl shadow-inner my-2 pt-4">
         {chat.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">
             No messages yet
@@ -81,8 +111,11 @@ function Chat({ message, setMessage, sendMessage, onLogout }) {
         <div ref={messagesEndRef}></div>
       </div>
 
-      {/* Input Area */}
-      <div className="sticky bottom-0 left-0 right-0 w-full px-4 pb-[env(safe-area-inset-bottom)] mb-3 z-20">
+      {/* Input Area – fixed to viewport bottom, adjusted by visualViewport */}
+      <div
+        ref={inputBarRef}
+        className="fixed left-0 right-0 bottom-0 w-full px-4 pb-[env(safe-area-inset-bottom)] mb-2 z-20"
+      >
         <div
           className="
             flex items-center gap-2
