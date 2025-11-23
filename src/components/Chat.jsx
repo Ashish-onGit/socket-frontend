@@ -4,117 +4,156 @@ import { FiLogOut } from "react-icons/fi";
 import { IoSend } from "react-icons/io5";
 import EmojiPicker from "emoji-picker-react";
 
-function Chat({ username, chat, message, setMessage, sendMessage, onLogout, typingUser }) {
+function Chat({
+  username,
+  chat = [],
+  message,
+  setMessage,
+  sendMessage,
+  onLogout,
+  typingUser,
+}) {
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
-  const inputBarRef = useRef(null);
   const textareaRef = useRef(null);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  // Scroll to latest message
+  const [replyTo, setReplyTo] = useState(null);
+  // console.log(showEmojiPicker)
+  // Auto scroll to bottom
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
+  // Enter to send
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (message.trim() !== "") {
-        sendMessage();
-      }
+      message.trim() !== "" && handleSend();
     }
   };
 
+  // Emoji click
   const handleEmojiClick = (emojiData) => {
     setMessage((prev) => prev + emojiData.emoji);
   };
 
-  // Auto-resize textarea but cap at max height
+  // Auto resize textarea
   const handleInputResize = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      const newHeight = Math.min(textarea.scrollHeight, 96); // 96px ≈ 3 rows
-      textarea.style.height = `${newHeight}px`;
-    }
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "auto";
+    textareaRef.current.style.height =
+      Math.min(textareaRef.current.scrollHeight, 96) + "px";
   };
 
-  useEffect(() => {
-    handleInputResize();
-  }, [message]);
+  useEffect(handleInputResize, [message]);
 
-  // Close emoji picker when clicking outside
+  // Close emoji picker on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handler = (e) => {
       if (
+        showEmojiPicker &&
         emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target) &&
-        showEmojiPicker
+        !emojiPickerRef.current.contains(e.target)
       ) {
+        console.log(showEmojiPicker," from use eeffect")
         setShowEmojiPicker(false);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [showEmojiPicker]);
+
+  // Send message with reply info
+  const handleSend = () => {
+    if (!message.trim()) return;
+
+    const newMessage = {
+      message: message.trim(),
+      sender: username,
+      fromSelf: true,
+      replyTo: replyTo
+        ? {
+            message: replyTo.message,
+            sender: replyTo.sender,
+          }
+        : null,
+    };
+
+    sendMessage(newMessage); // IMPORTANT: send full object
+    setMessage("");
+    setReplyTo(null);
+  };
 
   return (
     <div className="relative min-h-[100dvh] flex flex-col text-gray-100 radial-bg overflow-x-hidden pb-28">
       {/* Header */}
-      <div className="sticky top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
+      <div className="fixed w-full top-0 flex justify-between items-center bg-opacity-80 backdrop-blur-md p-4 rounded-lg shadow-lg z-10">
         <h2 className="text-xl font-semibold">Hey, {username}</h2>
         <button
           onClick={onLogout}
-          aria-label="Logout"
           className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition"
         >
           <FiLogOut size={20} />
         </button>
       </div>
 
-      {/* Chat Messages */}
-      <div className="flex-grow overflow-y-auto p-4 rounded-3xl shadow-inner my-2 pt-4">
+      {/* Messages */}
+      <div className="flex-grow overflow-y-auto p-4 rounded-3xl shadow-inner my-2 pt-20">
         {chat.length === 0 ? (
           <p className="text-center text-gray-500 dark:text-gray-400">
-            No messages yet
+            {/* No words have landed here yet */}
+            No messages yet. Be the first! 😎
           </p>
         ) : (
           chat.map((msg, idx) => (
             <Message
               key={idx}
-              message={msg.message}
+              message={msg}
               fromSelf={msg.fromSelf}
-              sender={msg.sender || "Unknown"}
+              sender={msg.sender}
+              onReply={(m) => setReplyTo(m)}
             />
           ))
         )}
         <div ref={messagesEndRef}></div>
       </div>
 
-      {/* Typing Indicator */}
+      {/* Typing indicator */}
       {typingUser && (
-        <div className="text-sm text-gray-400 italic px-4 pb-2">{typingUser}</div>
+        <div className="text-sm text-gray-400 italic px-4 pb-2">
+          {typingUser}
+        </div>
       )}
 
+      {/* Input section */}
+      <div className="fixed left-0 right-0 bottom-0 w-full px-4 mb-2 z-20">
+        {/* Reply preview */}
+        {replyTo && (
+          <div className="flex flex-col items-start justify-between overflow-hidden bg-gray-200 dark:bg-gray-800 p-2 rounded-t-lg border-l-4 border-purple-500 mb-1">
+            {/* Header Row */}
+            <div className="flex w-full justify-between items-center">
+              <div className="text-sm">
+                Replying to <strong>{replyTo.sender}</strong>:
+              </div>
+              <button
+                onClick={() => setReplyTo(null)}
+                className="text-red-500 hover:text-red-700 font-bold"
+              >
+                ✕
+              </button>
+            </div>
 
-      {/* Input Area */}
-      <div
-        ref={inputBarRef}
-        className="fixed left-0 right-0 bottom-0 w-full px-4 pb-[env(safe-area-inset-bottom)] mb-2 z-20"
-      >
-        <div
-          className="
-            flex items-center gap-2
-            bg-white dark:bg-gray-900
-            p-3 rounded-full shadow-lg
-          "
-        >
+            {/* Message Preview */}
+            <div className="max-h-14 overflow-hidden w-full">
+              <span className="opacity-80 block truncate w-full">
+                {replyTo.message}
+              </span>
+            </div>
+          </div>
+        )}
+        {/* Input bar */}
+        <div className="backdrop-blur-xl bg-opacity-80 flex items-center gap-2 bg-white dark:bg-gray-900 p-3 rounded-full shadow-lg">
           <textarea
             ref={textareaRef}
             value={message}
@@ -124,37 +163,22 @@ function Chat({ username, chat, message, setMessage, sendMessage, onLogout, typi
             }}
             onKeyDown={handleKeyPress}
             placeholder="Type here..."
+            className="flex-1 min-w-0 p-3 pl-4 rounded-full border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none overflow-y-auto no-scrollbar max-h-14"
             rows={1}
-            className="
-              flex-1 min-w-0
-              p-3 pl-4
-              rounded-full border border-gray-300 dark:border-gray-700
-              bg-gray-50 dark:bg-gray-700
-              text-gray-900 dark:text-white
-              focus:outline-none focus:ring-1 focus:ring-purple-500
-              resize-none overflow-y-auto no-scrollbar
-              max-h-14
-            "
           />
 
-          {/* Emoji Button */}
+          {/* Emoji */}
           <button
             onClick={() => setShowEmojiPicker((prev) => !prev)}
-            aria-label="Emoji Picker"
             className="p-2 rounded-full text-3xl hover:bg-gray-200 dark:hover:bg-gray-700"
           >
             ☺
           </button>
 
-          {/* Send Button */}
+          {/* Send */}
           <button
-            onClick={sendMessage}
-            aria-label="Send Message"
-            className="
-              flex items-center justify-center
-              bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700
-              text-white px-6 py-2 rounded-full transition
-            "
+            onClick={handleSend}
+            className="flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-6 py-2 rounded-full transition"
           >
             <IoSend size={22} />
           </button>

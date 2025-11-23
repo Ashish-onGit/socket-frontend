@@ -1,28 +1,44 @@
 import React, { useState } from 'react';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 function Register({ onRegister, switchToLogin }) {
   const [username, setUsername] = useState('');
   const [pass, setPass] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Validation function
   const validateForm = () => {
     const usernameRegex = /^[a-zA-Z0-9]{5,20}$/; // Alphanumeric, 5-20 chars
     if (!usernameRegex.test(username)) {
-      alert('Username must be 5-20 characters and alphanumeric only.');
+      setError('Username must be 5-20 characters and alphanumeric only.');
       return false;
     }
     if (pass.length < 6) {
-      alert('Password must be at least 6 characters.');
+      setError('Password must be at least 6 characters.');
       return false;
     }
     return true;
   };
 
-  const handleRegister = () => {
-    if (validateForm()) {
-      onRegister(username, pass);
+  const handleRegister = async () => {
+    setError('');
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const success = await onRegister(username, pass); // Assume returns true/false
+      if (!success) {
+        setError('Registration failed. Try a different username.');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,6 +47,9 @@ function Register({ onRegister, switchToLogin }) {
       <div className="p-8 rounded-lg shadow-lg w-full max-w-md bg-opacity-80 backdrop-blur-md mt-auto">
         <h2 className="text-2xl font-bold mb-2 text-center">Create Your Account</h2>
         <p className="text-center text-gray-400 mb-6">Sign up to access exclusive features</p>
+
+        {/* Error Message */}
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
         {/* Username Input */}
         <input
@@ -62,9 +81,19 @@ function Register({ onRegister, switchToLogin }) {
         {/* Submit Button */}
         <button
           onClick={handleRegister}
-          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-3xl transition duration-200"
+          disabled={loading}
+          className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-3xl transition duration-200 ${
+            loading ? 'animate-pulse cursor-not-allowed' : ''
+          }`}
         >
-          Sign Up
+          {loading ? (
+            <>
+              <AiOutlineLoading3Quarters className="animate-spin" size={20} />
+              Signing up...
+            </>
+          ) : (
+            'Sign Up'
+          )}
         </button>
 
         {/* Switch to Login */}
