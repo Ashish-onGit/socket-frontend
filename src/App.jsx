@@ -1,69 +1,133 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  loginSuccess,
-  logout as logoutAction,
-} from "./features/auth/authSlice";
-import { addMessage, clearMessages } from "./features/chat/chatSlice";
-import { ToastContainer,Slide } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
+import { loginSuccess, logout as logoutAction } from "./features/auth/authSlice";
+import { loadUserChats } from "./features/chat/chatSlice";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Chat from "./components/Chat";
-import "./App.css";
+import MainLayout from "./components/layout/MainLayout";
+import { useToast } from "./components/common/ToastContext";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import "./index.css";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
-const socket = io(backendURL);
+const socket = io(backendURL, { autoConnect: false });
 
 function App() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const user = useSelector((state) => state.auth.user);
-  const chat = useSelector((state) => state.chat.messages);
 
-  const [step, setStep] = useState(user ? "chat" : "login");
-  const [message, setMessage] = useState("");
-  const [typingUser, setTypingUser] = useState("");
-
-  const myId = useRef("");
-
-  // ------------------------------
-  // SOCKET EVENT LISTENERS
-  // ------------------------------
+  // Run a one-time localStorage migration to replace "Saumya" with "Gauri"
   useEffect(() => {
-    socket.on("connect", () => {
-      myId.current = socket.id;
-    });
+    try {
+      // 1. Rename chats_of_Saumya to chats_of_Gauri
+      const saumyaChats = localStorage.getItem("chats_of_Saumya");
+      if (saumyaChats) {
+        localStorage.setItem("chats_of_Gauri", saumyaChats);
+        localStorage.removeItem("chats_of_Saumya");
+      }
 
-    socket.on("receive_message", (data) => {
-      // Do NOT strip replyTo — keep full object
-      dispatch(
-        addMessage({
-          ...data,
-          fromSelf: data.sender === user?.username,
-        })
-      );
-    });
+      // 2. Loop through all keys to perform sub-replacements
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
 
-    socket.on("show_typing", (username) => {
-      setTypingUser(`${username} is typing...`);
-    });
+        // Migrate channels
+        if (key.startsWith("channel_")) {
+          const val = localStorage.getItem(key);
+          if (val && val.includes("Saumya")) {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+              const updated = parsed.map(msg => ({
+                ...msg,
+                sender: msg.sender === "Saumya" ? "Gauri" : msg.sender
+              }));
+              localStorage.setItem(key, JSON.stringify(updated));
+            }
+          }
+        }
 
-    socket.on("hide_typing", () => setTypingUser(""));
+        // Migrate chats of any user (e.g. chats_of_Ashish)
+        if (key.startsWith("chats_of_")) {
+          const val = localStorage.getItem(key);
+          if (val && (val.includes("Saumya") || val.includes("saumya"))) {
+            const parsed = JSON.parse(val);
+            const updated = {};
+            for (const [username, details] of Object.entries(parsed)) {
+              const newUsername = username === "Saumya" ? "Gauri" : username;
+              const updatedMessages = (details.messages || []).map(msg => ({
+                ...msg,
+                sender: msg.sender === "Saumya" ? "Gauri" : msg.sender,
+                receiver: msg.receiver === "Saumya" ? "Gauri" : msg.receiver
+              }));
+              updated[newUsername] = {
+                ...details,
+                messages: updatedMessages
+              };
+            }
+            localStorage.setItem(key, JSON.stringify(updated));
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Localstorage migration error:", e);
+    }
+  }, []);
+
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+
+  // Apply theme to document html element
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Connect socket on login/refresh
+  useEffect(() => {
+    if (user?.username) {
+      socket.connect();
+    } else {
+      socket.disconnect();
+    }
+  }, [user]);
+
+  // Monitor socket connection events
+  useEffect(() => {
+    const handleConnect = () => {
+      showToast("Successfully connected to chat server", "success");
+    };
+
+    const handleDisconnect = () => {
+      showToast("Disconnected from chat server", "error");
+    };
+
+    const handleConnectError = () => {
+      showToast("Connection to server failed. Reconnecting...", "error");
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
 
     return () => {
-      socket.off("connect");
-      socket.off("receive_message");
-      socket.off("show_typing");
-      socket.off("hide_typing");
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
     };
-  }, [dispatch, user]);
+  }, [showToast]);
 
-  // ------------------------------
-  // AUTH
-  // ------------------------------
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    showToast(`Theme changed to ${nextTheme === "dark" ? "Dark" : "Light"}`, "info");
+  };
+
   const handleLogin = async (username, pass) => {
     try {
       const res = await fetch(`${backendURL}/login`, {
@@ -74,17 +138,14 @@ function App() {
 
       if (res.ok) {
         dispatch(loginSuccess({ username }));
-        setStep("chat");
+        navigate("/chat");
         return true;
-      } else {
-        // alert("Invalid credentials");
-        return false;
       }
-    } catch {
-      alert("Server error");
+      return false;
+    } catch (err) {
+      showToast("Failed to connect to authentication server", "error");
       return false;
     }
-
   };
 
   const handleRegister = async (username, pass) => {
@@ -96,99 +157,82 @@ function App() {
       });
 
       if (res.ok) {
-        setStep("login");
-      } else {
-        const err = await res.json();
-        alert(err.error);
+        navigate("/login");
+        return true;
       }
-    } catch {
-      alert("Server error");
+      return false;
+    } catch (err) {
+      showToast("Failed to connect to registration server", "error");
+      return false;
     }
   };
 
-  // ------------------------------
-  // SEND MESSAGE (NOW FULL OBJECT)
-  // ------------------------------
-  const sendMessage = (msgObj) => {
-    if (!msgObj || !msgObj.message.trim()) return;
-
-    // Add immediately to Redux for instant UI
-    dispatch(addMessage({ ...msgObj }));
-
-    // Send full message to server
-    socket.emit("send_message", msgObj);
-
-    // Stop typing
-    socket.emit("stop_typing");
-  };
-
-  // ------------------------------
-  // LOGOUT
-  // ------------------------------
   const onLogout = () => {
-    if (confirm("Are you sure?")) {
-      dispatch(logoutAction());
-      dispatch(clearMessages());
-      setStep("login");
-      toast.info("Logged out");
-      socket.disconnect();
-    }
+    dispatch(logoutAction());
+    dispatch(loadUserChats(null));
+    socket.disconnect();
+    showToast("Logged out successfully", "info");
+    navigate("/login");
   };
 
   return (
-    <>
-      <div className="bg-gradient-to-b from-[#2e026d] via-[#1a1a1a] to-black">
-        {step === "login" && (
-          <Login
-            onLogin={handleLogin}
-            switchToRegister={() => setStep("register")}
+    <div className="w-full h-full bg-brand-bg-light dark:bg-brand-bg-dark transition-colors duration-200">
+      <Routes>
+        <Route 
+          path="/login" 
+          element={
+            !user ? (
+              <Login
+                onLogin={handleLogin}
+                switchToRegister={() => navigate("/register")}
+                theme={theme}
+                toggleTheme={toggleTheme}
+              />
+            ) : (
+              <Navigate to="/chat" replace />
+            )
+          } 
+        />
+
+        <Route 
+          path="/register" 
+          element={
+            !user ? (
+              <Register
+                onRegister={handleRegister}
+                switchToLogin={() => navigate("/login")}
+                theme={theme}
+                toggleTheme={toggleTheme}
+              />
+            ) : (
+              <Navigate to="/chat" replace />
+            )
+          } 
+        />
+
+        {["/chat", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
+          <Route 
+            key={path}
+            path={path} 
+            element={
+              user ? (
+                <MainLayout
+                  socket={socket}
+                  onLogout={onLogout}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
           />
-        )}
+        ))}
 
-        {step === "register" && (
-          <Register
-            onRegister={handleRegister}
-            switchToLogin={() => setStep("login")}
-          />
-        )}
-
-        {step === "chat" && (
-          <Chat
-            username={user.username}
-            chat={chat}
-            message={message}
-            setMessage={(val) => {
-              setMessage(val);
-
-              socket.emit("typing", user.username);
-
-              clearTimeout(window.typingTimeout);
-              window.typingTimeout = setTimeout(() => {
-                socket.emit("stop_typing");
-              }, 1000);
-            }}
-            sendMessage={sendMessage}
-            onLogout={onLogout}
-            typingUser={typingUser}
-          />
-        )}
-      </div>
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        hideProgressBar={true}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="dark"
-     
-        newestOnTop={true}
-         transition={Slide}
-        bodyClassName="text-sm font-medium"
-        style={{ zIndex: 99999 ,padding:"10px 20px", borderRadius:20}}
-        closeButton={false}
-      />
-    </>
+        {/* Fallback routes */}
+        <Route path="*" element={<Navigate to={user ? "/chat" : "/login"} replace />} />
+      </Routes>
+    </div>
   );
 }
 

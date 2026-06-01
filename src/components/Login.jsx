@@ -1,120 +1,195 @@
 import React, { useState } from "react";
-import {
-  AiOutlineEye,
-  AiOutlineEyeInvisible,
-  AiOutlineLoading3Quarters,
-} from "react-icons/ai";
-import { toast } from "react-toastify";
+import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FiUser, FiLock } from "react-icons/fi";
+import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
+import { useToast } from "./common/ToastContext";
+import ThemeSwitcher from "./common/ThemeSwitcher";
 
-function Login({ onLogin, switchToRegister }) {
+export default function Login({ onLogin, switchToRegister, theme, toggleTheme }) {
+  const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-// console.log(onLogin)
 
   const handleLogin = async () => {
-    setError(""); // Clear previous error
-    if (!username || !pass) {
-      // setError("Please enter both username and password.");
-      toast.error("Please enter both username and password",{ autoClose: 2000 });
+    setError("");
+    if (!username.trim() || !pass.trim()) {
+      showToast("Please enter both username and password", "error");
       return;
     }
 
     setLoading(true);
     try {
-      // Simulate login delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      const success = await onLogin(username, pass); // Assume onLogin returns true/false
-            if(success){
-        toast.success("Login successful")
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const success = await onLogin(username.trim(), pass.trim());
+      if (success) {
+        showToast("Welcome to Aether Chat!", "success");
+      } else {
+        showToast("Invalid credentials", "error");
+        setError("Invalid credentials. Try Ashish/Ashish, Gauri/Gauri, or register a new account.");
       }
-      else {
-        toast.error("Invalid credentials");
-      }
-
-      
     } catch (err) {
-      toast.error("Something went wrong. Please try again.");
+      showToast("Server connection error", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-gray-100 radial-bg">
-      <div className="p-8 rounded-lg shadow-lg w-full max-w-md bg-opacity-80 backdrop-blur-md mt-auto">
-        <h2 className="text-2xl font-bold mb-2 text-center">Welcome Back</h2>
-        <p className="text-center text-gray-400 mb-6">Sign in to continue</p>
+    <div className="w-screen h-screen relative flex items-center justify-center p-0 md:p-6 bg-brand-bg-light dark:bg-brand-bg-dark overflow-hidden font-sans transition-colors duration-200">
+      
 
-        {/* Error Message */}
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-        {/* Username Input */}
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username"
-          className="w-full p-3 pl-6 mb-4 border border-gray-900 rounded-3xl bg-gray-50 dark:bg-[#4242424e] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-        />
+      {/* Main split-panel container */}
+      <div className="w-full h-full md:max-w-5xl md:h-[80dvh] rounded-none md:rounded-[2.5rem] overflow-hidden glass-panel premium-card flex relative z-10 border border-white/20 dark:border-white/5 shadow-2xl">
+        
+        {/* Left Side: 3D Illustration Panel (Visible on Desktop) */}
+        <div className="hidden md:flex md:w-1/2 flex-col justify-between p-10 bg-gradient-to-tr from-brand-50 to-indigo-100 dark:from-[#1E1B4B]/10 dark:to-zinc-950/30 relative overflow-hidden border-r border-gray-100 dark:border-white/5">
+          
+          {/* Logo & Theme Switcher Header */}
+          <div className="flex justify-between items-center z-10">
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+          </div>
 
-        {/* Password Input with Eye Toggle */}
-        <div className="relative mb-6">
-          <input
-            type={showPass ? "text" : "password"}
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            className="w-full p-3 pl-6 border border-gray-900 rounded-3xl bg-[#4242424e] dark:bg-[#4242424e] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <span
-            onClick={() => setShowPass(!showPass)}
-            className="absolute right-4 top-3 cursor-pointer text-gray-400"
-          >
-            {showPass ? (
-              <AiOutlineEyeInvisible size={22} />
-            ) : (
-              <AiOutlineEye size={22} />
-            )}
-          </span>
+          {/* Centered Image */}
+          <div className="flex-1 flex flex-col justify-center items-center z-10 my-4 select-none pointer-events-none">
+            <img 
+              src="/login_visual.png" 
+              alt="Aether Chat Visual Representation" 
+              className="max-h-[300px] object-contain animate-float drop-shadow-2xl" 
+            />
+          </div>
+
+          {/* Bottom Descriptive Panel */}
+          <div className="z-10">
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 font-sans">Connecting People Instantly</h3>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed font-sans">
+              Experience latency-free private messaging built with absolute glassmorphism style and modern architecture.
+            </p>
+          </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-2 rounded-3xl transition duration-200 ${
-            loading ? "animate-pulse cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? (
-            <>
-              <AiOutlineLoading3Quarters className="animate-spin" size={20} />
-              Logging in...
-            </>
-          ) : (
-            "Continue"
-          )}
-        </button>
+        {/* Right Side: Form Panel */}
+        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white/80 dark:bg-zinc-900/70 backdrop-blur-md relative z-10">
+          
+          {/* Mobile-only Logo & Theme Switcher Header */}
+          <div className="md:hidden flex justify-between items-center mb-8">
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+          </div>
 
-        {/* Switch to Register */}
-        <p className="mt-4 text-center">
-          Don't have an account?{" "}
-          <span
-            onClick={switchToRegister}
-            className="text-purple-500 hover:underline cursor-pointer"
-          >
-            Register
-          </span>
-        </p>
+          <div className="text-left mb-6">
+            <h2 className="text-2xl font-extrabold tracking-tight font-sans text-gray-900 dark:text-white">Sign in</h2>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 font-sans">
+              Welcome back! Enter your login details below.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3 mb-5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-500/10 border border-red-500/15 rounded-2xl text-center font-sans">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4 font-sans">
+            <div>
+              <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider block mb-1.5 pl-1">
+                Username
+              </label>
+              <div className="relative flex items-center">
+                <FiUser className="absolute left-4 text-gray-400 dark:text-zinc-500" size={14} />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
+                  className="w-full pl-11 pr-4 py-3 text-xs rounded-2xl bg-gray-200/50 dark:bg-white/5 border border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-zinc-950/40 focus:outline-none text-gray-900 dark:text-white transition-all duration-200 font-sans"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider block mb-1.5 pl-1">
+                Password
+              </label>
+              <div className="relative flex items-center">
+                <FiLock className="absolute left-4 text-gray-400 dark:text-zinc-500" size={14} />
+                <input
+                  type={showPass ? "text" : "password"}
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  placeholder="Password"
+                  autoComplete="current-password"
+                  className="w-full pl-11 pr-11 py-3 text-xs rounded-2xl bg-gray-200/50 dark:bg-white/5 border border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 focus:bg-white dark:focus:bg-zinc-950/40 focus:outline-none text-gray-900 dark:text-white transition-all duration-200 font-sans"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+                >
+                  {showPass ? <AiOutlineEyeInvisible size={16} /> : <AiOutlineEye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full py-3.5 mt-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-2xl font-bold text-xs tracking-wide shadow-lg shadow-indigo-600/20 hover:shadow-indigo-500/30 hover:scale-[1.01] active:scale-[0.99] transition-all duration-250 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {loading ? (
+                <>
+                  <AiOutlineLoading3Quarters className="animate-spin" size={14} />
+                  Accessing chat...
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </button>
+          </div>
+
+          {/* Social Sign-in Splitter */}
+          <div className="relative my-6 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-100 dark:border-white/5"></div>
+            </div>
+            <span className="relative px-3 bg-white dark:bg-zinc-900 text-[9px] uppercase font-bold text-gray-400 dark:text-zinc-500 tracking-wider font-sans">
+              or sign in with
+            </span>
+          </div>
+
+          {/* Social Badges */}
+          <div className="flex justify-center gap-3">
+            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
+              <FaGoogle size={14} />
+            </button>
+            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
+              <FaMicrosoft size={14} />
+            </button>
+            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
+              <FaGithub size={15} />
+            </button>
+          </div>
+
+          {/* Terms Footer */}
+          <p className="text-[10px] text-center text-gray-400 dark:text-zinc-500 mt-6 leading-relaxed font-sans">
+            By signing in you agree to our <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">Terms of Service</span> and <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">Privacy Policy</span>.
+          </p>
+
+          <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 pl-1 font-sans">
+            Don't have an account?{" "}
+            <button
+              onClick={switchToRegister}
+              className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer transition-colors duration-150"
+            >
+              Create account
+            </button>
+          </p>
+        </div>
       </div>
-      {/* <button onClick={handleToastDemo}>hehe</button> */}
     </div>
   );
 }
-
-export default Login;

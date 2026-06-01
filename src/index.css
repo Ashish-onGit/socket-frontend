@@ -1,1 +1,142 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Outfit", system-ui, -apple-system, sans-serif;
+  
+  /* Reference UI Color System */
+  --color-brand-bg-light: #F5F7FA;
+  --color-brand-card-light: #FFFFFF;
+  --color-brand-border-light: #EAEAEA;
+  --color-brand-text-light: #1F2937;
+  
+  --color-brand-bg-dark: #171717;
+  --color-brand-sec-dark: #202020;
+  --color-brand-panel-dark: #262626;
+  --color-brand-card-dark: #2D2D2D;
+  
+  /* Primary accents */
+  --color-brand-teal: #0D9488;
+  --color-brand-teal-light: #CCFBF1;
+  --color-brand-emerald: #10B981;
+  
+  /* Animations */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Custom Scrollbar Utilities */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.25);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.45);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide default browser scrollbars if needed */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .glass-panel {
+  background: rgba(26, 26, 26, 0.65);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Premium Card Styles */
+.premium-card {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .premium-card {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.dark .premium-card:hover {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+
+/* Ambient glow blobs */
+.glow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.dark .glow-blob {
+  opacity: 0.25;
+}
+
+/* Page base settings */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+/* Emoji picker styling adjustments for dark mode */
+.dark .EmojiPickerReact {
+  --epr-bg-color: #202020 !important;
+  --epr-category-label-bg-color: #252525 !important;
+  --epr-text-color: #f3f4f6 !important;
+  --epr-search-input-bg-color: #2d2d2d !important;
+  --epr-search-input-text-color: #ffffff !important;
+  --epr-search-input-border-color: #3f3f46 !important;
+  --epr-emoji-variation-picker-bg-color: #202020 !important;
+  border-color: #2e2e2e !important;
+}
+
+.EmojiPickerReact {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 1rem !important;
+}
