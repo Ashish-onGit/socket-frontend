@@ -65,11 +65,11 @@ export function FilesSidebar({ onCategorySelect }) {
   const activeCategory = queryParams.get("category") || "all";
 
   const categories = [
-    { id: "all", name: "All files", count: 245, icon: <FiFolder size={14} />, color: "text-brand-teal bg-brand-teal/10" },
-    { id: "documents", name: "Documents", count: 78, icon: <FiFileText size={14} />, color: "text-purple-500 bg-purple-500/10" },
-    { id: "photos", name: "Photos", count: 120, icon: <FiFolder size={14} />, color: "text-amber-500 bg-amber-500/10" },
-    { id: "movies", name: "Movies", count: 32, icon: <FiFolder size={14} />, color: "text-emerald-500 bg-emerald-500/10" },
-    { id: "other", name: "Other", count: 15, icon: <FiFolder size={14} />, color: "text-rose-500 bg-rose-500/10" }
+    { id: "all", name: "All files", icon: <FiFolder size={14} />, color: "text-brand-teal bg-brand-teal/10" },
+    { id: "documents", name: "Documents", icon: <FiFileText size={14} />, color: "text-purple-500 bg-purple-500/10" },
+    { id: "photos", name: "Photos", icon: <FiFolder size={14} />, color: "text-amber-500 bg-amber-500/10" },
+    { id: "movies", name: "Movies", icon: <FiFolder size={14} />, color: "text-emerald-500 bg-emerald-500/10" },
+    { id: "other", name: "Other", icon: <FiFolder size={14} />, color: "text-rose-500 bg-rose-500/10" }
   ];
 
   return (
@@ -100,7 +100,6 @@ export function FilesSidebar({ onCategorySelect }) {
                   </div>
                   <span className="text-[11px] font-bold truncate">{cat.name}</span>
                 </div>
-                <span className={`text-[9px] font-bold ${isActive ? "text-white/85" : "text-gray-400"}`}>{cat.count}</span>
               </button>
             );
           })}
@@ -115,26 +114,8 @@ export function FilesMainArea() {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const category = queryParams.get("category") || "all";
-  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("grid"); // grid vs list
-
-  const mockFiles = [
-    { name: "Project_Proposal.pdf", cat: "documents", size: "2.4 MB", date: "May 28, 2026", sharedBy: "Gauri" },
-    { name: "Meeting_Minutes.docx", cat: "documents", size: "185 KB", date: "May 29, 2026", sharedBy: "Ashish" },
-    { name: "System_Architecture.png", cat: "photos", size: "1.2 MB", date: "May 30, 2026", sharedBy: "Gauri" },
-    { name: "Logo_Mockups.zip", cat: "other", size: "15.4 MB", date: "Jun 01, 2026", sharedBy: "Ashish" },
-    { name: "Promo_Video_Draft.mp4", cat: "movies", size: "84.2 MB", date: "May 24, 2026", sharedBy: "Gauri" },
-    { name: "Invoice_Template.xlsx", cat: "documents", size: "95 KB", date: "May 26, 2026", sharedBy: "Ashish" },
-    { name: "Profile_Picture.jpg", cat: "photos", size: "450 KB", date: "May 15, 2026", sharedBy: "Gauri" },
-    { name: "Backup_Database.sql", cat: "other", size: "3.8 MB", date: "May 18, 2026", sharedBy: "Ashish" }
-  ];
-
-  const filteredFiles = mockFiles.filter((f) => {
-    const matchesCat = category === "all" || f.cat === category;
-    const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
+  const [viewMode, setViewMode] = useState("grid");
 
   const headerSearch = (
     <div className="relative">
@@ -163,7 +144,7 @@ export function FilesMainArea() {
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
       <UnifiedHeader 
         title="Files Cabinet" 
-        subtitle="Manage shared documents and assets"
+        subtitle="Files attached in conversations will appear here"
         search={headerSearch}
         actions={headerActions}
         showMobileBack={true}
@@ -173,71 +154,18 @@ export function FilesMainArea() {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         <div className="flex justify-between items-center mb-6 pl-1 pr-1">
           <h3 className="text-[10px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
-            {category.charAt(0).toUpperCase() + category.slice(1)} Files ({filteredFiles.length})
+            {category.charAt(0).toUpperCase() + category.slice(1)} Files
           </h3>
         </div>
 
-        {filteredFiles.length === 0 ? (
-          <div className="h-64 flex flex-col items-center justify-center text-center text-gray-400">
-            <FiFolder size={36} className="opacity-30 mb-3 animate-pulse" />
-            <p className="text-[11px] font-bold">No files found matching filter</p>
-          </div>
-        ) : viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFiles.map((file, idx) => (
-              <div 
-                key={idx} 
-                className="p-5 bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-2xl shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-left relative flex flex-col justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-brand-teal/10 text-brand-teal rounded-xl">
-                    <FiFileText size={18} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h5 className="text-[11px] font-bold text-gray-800 dark:text-gray-100 truncate" title={file.name}>
-                      {file.name}
-                    </h5>
-                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">
-                      {file.size} &bull; {file.date}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-center justify-between border-t border-gray-100 dark:border-white/5 pt-3.5">
-                  <span className="text-[9px] text-gray-400">Shared by @{file.sharedBy}</span>
-                  <button 
-                    onClick={() => showToast(`Downloading ${file.name}...`, "success")}
-                    className="px-3 py-1 text-[9px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 rounded-lg transition cursor-pointer"
-                  >
-                    Download
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-2xl overflow-hidden divide-y divide-gray-100 dark:divide-white/5">
-            {filteredFiles.map((file, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3.5 hover:bg-gray-50 dark:hover:bg-white/5 transition">
-                <div className="flex items-center gap-3 min-w-0 flex-1 pl-1">
-                  <FiFileText className="text-brand-teal" size={15} />
-                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-100 truncate">{file.name}</span>
-                </div>
-                <div className="flex items-center gap-8 pr-2">
-                  <span className="text-[10px] text-gray-400 font-semibold">{file.size}</span>
-                  <span className="text-[10px] text-gray-400 font-semibold hidden md:inline">{file.date}</span>
-                  <span className="text-[10px] text-gray-400 hidden sm:inline">@{file.sharedBy}</span>
-                  <button 
-                    onClick={() => showToast(`Downloading ${file.name}...`, "success")}
-                    className="px-2.5 py-0.5 text-[9px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 rounded-md transition cursor-pointer"
-                  >
-                    Get
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Empty state — no dummy data shown */}
+        <div className="h-64 flex flex-col items-center justify-center text-center text-gray-400">
+          <FiFolder size={36} className="opacity-20 mb-3" />
+          <p className="text-[11px] font-bold text-gray-400 dark:text-zinc-500">No files shared yet</p>
+          <p className="text-[10px] text-gray-300 dark:text-zinc-600 mt-1 max-w-xs">
+            Files and images attached in your conversations will appear here.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -253,10 +181,10 @@ export function ChannelsSidebar() {
   const activeChannel = searchParams.get("name") || "";
 
   const channels = [
-    { name: "#general", desc: "Company wide chatter", count: 12 },
-    { name: "#announcements", desc: "Corporate updates", count: 4 },
-    { name: "#dev-talk", desc: "Coding and support", count: 8 },
-    { name: "#design-feedback", desc: "Visual review logs", count: 5 }
+    { name: "#general", desc: "Company wide chatter" },
+    { name: "#announcements", desc: "Corporate updates" },
+    { name: "#dev-talk", desc: "Coding and support" },
+    { name: "#design-feedback", desc: "Visual review logs" }
   ];
 
   return (
@@ -273,7 +201,7 @@ export function ChannelsSidebar() {
         {channels.map((chan) => {
           const isActive = activeChannel === chan.name;
           return (
-            <button
+              <button
               key={chan.name}
               onClick={() => navigate(`/channels?name=${encodeURIComponent(chan.name)}`)}
               className={`w-full text-left p-3 rounded-xl transition cursor-pointer flex justify-between items-center ${
@@ -284,9 +212,6 @@ export function ChannelsSidebar() {
                 <p className={`text-[11px] font-bold ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{chan.name}</p>
                 <p className={`text-[9px] ${isActive ? "text-white/85" : "text-gray-400 dark:text-zinc-500"} mt-0.5 truncate`}>{chan.desc}</p>
               </div>
-              <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full ${isActive ? "bg-white/20 text-white" : "bg-gray-100 dark:bg-white/5 text-gray-400"}`}>
-                {chan.count}
-              </span>
             </button>
           );
         })}
@@ -310,10 +235,7 @@ export function ChannelsMainArea() {
     if (cached) {
       setMessages(JSON.parse(cached));
     } else {
-      setMessages([
-        { sender: "Ashish", text: `Welcome to SocketChat channel ${activeChannel}! Feel free to converse here.`, time: "11:00 AM" },
-        { sender: "Gauri", text: "Excited to test this live dashboard! Design looks premium.", time: "11:02 AM" }
-      ]);
+      setMessages([]);
     }
   }, [activeChannel]);
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiClock, FiFileText, FiEye, FiUsers, FiSettings } from "react-icons/fi";
+import { FiMessageSquare, FiFileText, FiHash, FiUsers, FiSettings } from "react-icons/fi";
 import { updateProfile } from "../../features/auth/authSlice";
 import { 
   loadUserChats, addMessage, editMessage, deleteMessage, toggleReaction, markAsRead, setConversations 
@@ -309,11 +309,11 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   const isMobileNavVisible = isSettingsPath || !isMobileDetailActive || currentPath.startsWith("/analytics");
 
   const mobileNavItems = [
-    { icon: <FiClock size={16} />, label: "Chats", path: "/chat" },
-    { icon: <FiFileText size={16} />, label: "Files", path: "/files" },
-    { icon: <FiEye size={16} />, label: "Channels", path: "/channels" },
-    { icon: <FiUsers size={16} />, label: "Contacts", path: "/contacts" },
-    { icon: <FiSettings size={16} />, label: "Settings", path: "/settings" }
+    { icon: <FiMessageSquare size={18} />, label: "Chats", path: "/chat" },
+    { icon: <FiFileText size={18} />, label: "Files", path: "/files" },
+    { icon: <FiHash size={18} />, label: "Channels", path: "/channels" },
+    { icon: <FiUsers size={18} />, label: "Contacts", path: "/contacts" },
+    { icon: <FiSettings size={18} />, label: "Settings", path: "/settings" },
   ];
 
   const isMobile = windowWidth < 768;
@@ -401,9 +401,20 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
                 <>
                   <div 
                     style={{ width: `${sidebarWidth}px` }} 
-                    className="h-full flex-shrink-0 overflow-hidden"
+                    className="h-full flex-shrink-0 overflow-hidden relative"
                   >
-                    {sidebarElement}
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={currentPath}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 12 }}
+                        transition={{ duration: 0.22, ease: "easeInOut" }}
+                        className="absolute inset-0 w-full h-full"
+                      >
+                        {sidebarElement}
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
 
                   {/* Draggable resize handle */}
@@ -418,9 +429,20 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
                 </>
               )}
 
-              {/* Chat / Main area - flexible */}
-              <div className="h-full flex-grow flex flex-col min-w-0">
-                {mainElement}
+              {/* Chat / Main area - flexible with smooth workspace transition */}
+              <div className="h-full flex-grow flex flex-col min-w-0 relative overflow-hidden">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={currentPath}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.28, ease: "easeInOut" }}
+                    className="absolute inset-0 w-full h-full flex flex-col"
+                  >
+                    {mainElement}
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* Right Details Info Panel */}
@@ -469,33 +491,70 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
         </div>
 
-        {/* Mobile Bottom Navigation Bar */}
+        {/* Pinterest-style Floating Glassmorphism Mobile Navigation */}
         {isMobileNavVisible && (
-          <div className="md:hidden h-14 bg-white dark:bg-brand-panel-dark border-t border-brand-border-light dark:border-white/5 flex items-center justify-around z-20 flex-shrink-0 select-none pb-safe">
-            {mobileNavItems.map((item, idx) => {
-              const isActive = item.path === "/chat"
-                ? (currentPath.startsWith("/chat") || currentPath.startsWith("/archived"))
-                : (item.path ? currentPath.startsWith(item.path) : false);
-              return (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    navigate(item.path);
-                  }}
-                  className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-center transition cursor-pointer relative ${
-                    isActive
-                      ? "text-brand-teal"
-                      : "text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="text-[8px] font-bold mt-1 uppercase tracking-wider">{item.label}</span>
-                  {isActive && (
-                    <span className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-brand-teal rounded-b" />
-                  )}
-                </button>
-              );
-            })}
+          <div className="md:hidden flex-shrink-0 flex justify-center pb-4 pt-2 px-4 bg-transparent">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", damping: 20, stiffness: 200 }}
+              className="flex items-center gap-1 px-2 py-2 rounded-[22px] bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/40"
+            >
+              {mobileNavItems.map((item, idx) => {
+                const isActive = item.path === "/chat"
+                  ? (currentPath.startsWith("/chat") || currentPath.startsWith("/archived"))
+                  : (item.path ? currentPath.startsWith(item.path) : false);
+                return (
+                  <motion.button
+                    key={idx}
+                    onClick={() => navigate(item.path)}
+                    whileTap={{ scale: 0.88 }}
+                    className="relative flex flex-col items-center justify-center cursor-pointer select-none px-3 py-1.5 rounded-[18px] transition-colors"
+                  >
+                    {/* Active pill background */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-active-pill"
+                        className="absolute inset-0 rounded-[18px] bg-brand-teal/15 dark:bg-brand-teal/20"
+                        transition={{ type: "spring", damping: 22, stiffness: 250 }}
+                      />
+                    )}
+
+                    {/* Icon */}
+                    <motion.div
+                      animate={{
+                        scale: isActive ? 1.12 : 1,
+                        color: isActive ? "var(--brand-teal, #0d9488)" : undefined,
+                      }}
+                      transition={{ type: "spring", damping: 18, stiffness: 220 }}
+                      className={`relative z-10 transition-colors ${
+                        isActive
+                          ? "text-brand-teal"
+                          : "text-gray-400 dark:text-zinc-500"
+                      }`}
+                    >
+                      {item.icon}
+                    </motion.div>
+
+                    {/* Label — only shows for active tab */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.span
+                          key="label"
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.18 }}
+                          className="relative z-10 text-[9px] font-bold text-brand-teal mt-0.5 uppercase tracking-wider leading-none"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
           </div>
         )}
       </div>

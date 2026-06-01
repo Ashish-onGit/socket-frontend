@@ -16,32 +16,74 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
   const sharedPhotos = messages.filter((m) => !m.deleted && m.type === "image" && m.fileUrl);
   const sharedFiles = messages.filter((m) => !m.deleted && m.type === "file" && m.fileUrl);
 
-  const totalFilesCount = sharedFiles.length + sharedPhotos.length + 231; // adding dummy 231 to match reference visual
-  const totalLinksCount = 45; // matching reference dummy visual
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const sharedLinks = messages.filter((m) => !m.deleted && m.message && urlRegex.test(m.message));
+
+  const totalFilesCount = sharedFiles.length + sharedPhotos.length;
+  const totalLinksCount = sharedLinks.length;
+
+  const docs = sharedFiles.filter(m => {
+    const ext = m.fileName?.split('.').pop()?.toLowerCase();
+    return ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar'].includes(ext);
+  });
+  const movies = sharedFiles.filter(m => {
+    const ext = m.fileName?.split('.').pop()?.toLowerCase();
+    return ['mp4', 'mkv', 'avi', 'mov', 'webm'].includes(ext);
+  });
+  const others = sharedFiles.filter(m => {
+    const ext = m.fileName?.split('.').pop()?.toLowerCase();
+    return !['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'mp4', 'mkv', 'avi', 'mov', 'webm'].includes(ext);
+  });
+
+  const formatBytes = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const getFilesSize = (fileList) => {
+    let totalBytes = 0;
+    fileList.forEach(m => {
+      if (m.fileSize) {
+        const match = m.fileSize.match(/^([\d.]+)\s*(KB|MB|Bytes|GB)$/i);
+        if (match) {
+          const val = parseFloat(match[1]);
+          const unit = match[2].toUpperCase();
+          if (unit === 'KB') totalBytes += val * 1024;
+          else if (unit === 'MB') totalBytes += val * 1024 * 1024;
+          else if (unit === 'GB') totalBytes += val * 1024 * 1024 * 1024;
+          else totalBytes += val;
+        }
+      }
+    });
+    return formatBytes(totalBytes);
+  };
 
   const fileCategories = [
     {
       name: "Documents",
-      count: 126 + sharedFiles.length,
-      size: "193 MB",
+      count: docs.length,
+      size: getFilesSize(docs),
       iconColor: "text-purple-500 bg-purple-500/10",
     },
     {
       name: "Photos",
-      count: 53 + sharedPhotos.length,
-      size: "321 MB",
+      count: sharedPhotos.length,
+      size: getFilesSize(sharedPhotos),
       iconColor: "text-amber-500 bg-amber-500/10",
     },
     {
       name: "Movies",
-      count: 3,
-      size: "210 MB",
+      count: movies.length,
+      size: getFilesSize(movies),
       iconColor: "text-brand-teal bg-brand-teal/10",
     },
     {
       name: "Other",
-      count: 49,
-      size: "194 MB",
+      count: others.length,
+      size: getFilesSize(others),
       iconColor: "text-rose-500 bg-rose-500/10",
     }
   ];
@@ -68,10 +110,20 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
         <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 dark:border-white/10 select-none">
           <Avatar name={activeConversation} size="xl" showStatus={false} />
         </div>
-        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 mt-3">{activeConversation}</h4>
+        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 mt-3">
+          {chatDetails?.recipient?.name || activeConversation}
+        </h4>
+        {chatDetails?.recipient?.name && (
+          <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">@{activeConversation}</p>
+        )}
         <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">
           {isOnline ? "Active now" : "Offline"}
         </p>
+        {chatDetails?.recipient?.bio && (
+          <p className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-2.5 px-4 line-clamp-2">
+            "{chatDetails.recipient.bio}"
+          </p>
+        )}
       </div>
 
       {/* Stats side-by-side buttons (Matches Reference layout) */}
@@ -192,7 +244,11 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Joined Date</span>
-              <span className="font-bold text-gray-800 dark:text-gray-200">June 1, 2026</span>
+              <span className="font-bold text-gray-800 dark:text-gray-200">
+                {chatDetails?.recipient?.createdAt 
+                  ? new Date(chatDetails.recipient.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+                  : "June 1, 2026"}
+              </span>
             </div>
           </div>
         </div>

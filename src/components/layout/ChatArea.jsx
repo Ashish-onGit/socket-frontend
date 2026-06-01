@@ -15,6 +15,7 @@ import {
   FiShare2,
   FiChevronLeft,
   FiInfo,
+  FiArchive,
   FiTrash,
   FiX,
   FiCheck,
@@ -31,7 +32,10 @@ import {
   setActiveConversation,
   clearChat,
   markAsRead,
+  archiveConversation,
+  deleteConversation,
 } from "../../features/chat/chatSlice";
+import { useNavigate } from "react-router-dom";
 import Avatar from "../common/Avatar";
 import ContextMenu from "../common/ContextMenu";
 import ConfirmDialog from "../common/ConfirmDialog";
@@ -59,7 +63,7 @@ const MessageItem = React.memo(
     const reactionSummary = msg.reactions ? Object.entries(msg.reactions) : [];
     return (
       <div
-        className={`flex flex-col group/msg relative ${fromSelf ? "items-end" : "items-start"}`}
+        className={`flex flex-col group/msg relative py-1.5 w-full ${fromSelf ? "items-end" : "items-start"}`}
         onContextMenu={(e) => onContextMenu(e, msg)}
         onTouchStart={() => onTouchStart(msg)}
         onTouchEnd={onTouchEnd}
@@ -67,7 +71,7 @@ const MessageItem = React.memo(
         onTouchCancel={onTouchEnd}
       >
         {/* Sender Label and Timestamp above bubble */}
-        <div className="text-[9px] text-gray-400 dark:text-zinc-500 mb-1 pl-1 pr-1 font-sans">
+        <div className="text-[10px] text-gray-400 dark:text-zinc-500 mb-1 pl-1 pr-1 font-sans">
           <span className="font-bold">{fromSelf ? "You" : msg.sender}</span>
           <span className="mx-1">•</span>
           <span>
@@ -80,24 +84,24 @@ const MessageItem = React.memo(
 
         {/* Quoted Reply Above Bubble */}
         {msg.replyTo && (
-          <div className="text-[9px] text-gray-400 dark:text-zinc-500 mb-1 max-w-[65%] truncate flex items-center gap-1 font-sans pl-1">
-            <FiCornerUpLeft size={10} />
+          <div className="text-[10px] text-gray-400 dark:text-zinc-500 mb-1 max-w-[65%] truncate flex items-center gap-1 font-sans pl-1">
+            <FiCornerUpLeft size={11} />
             Replying to <span className="font-bold">{msg.replyTo.sender}</span>:
             "{msg.replyTo.message}"
           </div>
         )}
 
         {/* Bubble Content */}
-        <div className="flex items-end gap-2 max-w-[75%] relative">
+        <div className="flex items-end gap-2.5 max-w-[78%] relative">
           {!fromSelf && (
-            <div className="mb-0.5">
-              <Avatar name={msg.sender} size="xs" showStatus={false} />
+            <div className="mb-0.5 flex-shrink-0">
+              <Avatar name={msg.sender} size="sm" showStatus={false} />
             </div>
           )}
 
           <div className="flex flex-col relative">
             <div
-              className={`p-3 rounded-2xl relative text-[11px] leading-relaxed break-words font-sans ${
+              className={`p-3 px-3.5 rounded-2xl relative text-xs md:text-sm leading-relaxed break-words font-sans ${
                 msg.deleted
                   ? "italic text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10"
                   : fromSelf
@@ -224,6 +228,7 @@ export default function ChatArea({
   onToggleInfoPanel,
 }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const currentUser = useSelector((state) => state.auth.user);
   const activeConversation = useSelector(
@@ -257,7 +262,9 @@ export default function ChatArea({
   });
   // Confirm Dialog State
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmDeleteChat, setConfirmDeleteChat] = useState(false);
   const [confirmDeleteMsg, setConfirmDeleteMsg] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Search inside active conversation
   const [searchOpen, setSearchOpen] = useState(false);
@@ -532,6 +539,44 @@ export default function ChatArea({
     setConfirmDeleteMsg(null);
   };
 
+  const handleArchive = async () => {
+    if (!activeConversation) return;
+    dispatch(archiveConversation({ participant: activeConversation, currentUser: currentUser.username }));
+    try {
+      const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+      await fetch(`${backendURL}/api/conversations/archive`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+        body: JSON.stringify({ participant: activeConversation }),
+      });
+      showToast("Conversation archived", "success");
+      dispatch(setActiveConversation(null));
+    } catch (err) {
+      console.error("Failed to archive conversation:", err);
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!activeConversation) return;
+    dispatch(deleteConversation({ participant: activeConversation, currentUser: currentUser.username }));
+    try {
+      const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+      await fetch(`${backendURL}/api/conversations/${activeConversation}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      });
+      showToast("Conversation deleted", "info");
+      dispatch(setActiveConversation(null));
+    } catch (err) {
+      console.error("Failed to delete conversation:", err);
+    }
+  };
+
   // Date separating logic
   const groupMessagesByDate = (msgs) => {
     const groups = {};
@@ -682,65 +727,93 @@ export default function ChatArea({
           )}
         </div>
 
-        {/* Right: Action icons and Dropdown menu */}
-        <div className="flex items-center gap-0.5 flex-shrink-0">
-          <Tooltip text="Voice Call">
-            <button
-              onClick={() => showToast("Starting voice call...", "info")}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer"
-            >
-              <FiPhone size={14} />
-            </button>
-          </Tooltip>
-
-          <Tooltip text="Video Call">
-            <button
-              onClick={() => showToast("Starting video call...", "info")}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer"
-            >
-              <FiVideo size={14} />
-            </button>
-          </Tooltip>
-
-          {searchOpen ? (
-            <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-xl px-2 py-1 font-sans mr-1">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={chatSearchQuery}
-                onChange={(e) => setChatSearchQuery(e.target.value)}
-                className="text-[10px] bg-transparent border-none focus:outline-none text-gray-900 dark:text-white w-20 md:w-36"
-                autoFocus
-              />
-              <button
-                onClick={() => {
-                  setSearchOpen(false);
-                  setChatSearchQuery("");
-                }}
-                className="text-gray-400 hover:text-gray-600"
+        {/* Right: Call + 3-dot overflow menu */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Inline search bar — only shown when active */}
+          <AnimatePresence>
+            {searchOpen && (
+              <motion.div
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: "auto", opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
               >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <Tooltip text="Search messages">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer"
-              >
-                <FiSearch size={14} />
-              </button>
-            </Tooltip>
-          )}
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-xl px-3 py-1.5 font-sans">
+                  <FiSearch size={13} className="text-gray-400 flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Search messages..."
+                    value={chatSearchQuery}
+                    onChange={(e) => setChatSearchQuery(e.target.value)}
+                    className="text-[10px] bg-transparent border-none focus:outline-none text-gray-900 dark:text-white w-28 md:w-40"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => { setSearchOpen(false); setChatSearchQuery(""); }}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition cursor-pointer flex-shrink-0"
+                  >
+                    <FiX size={13} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <Tooltip text="Chat Info">
-            <button
-              onClick={onToggleInfoPanel}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer"
-            >
-              <FiInfo size={14} />
-            </button>
-          </Tooltip>
+          {/* Call Button — always visible, prominent */}
+          <button
+            onClick={() => showToast("Starting voice call...", "info")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 transition shadow-sm shadow-brand-teal/20 cursor-pointer flex-shrink-0"
+          >
+            <FiPhone size={13} />
+            <span className="hidden sm:inline">Call</span>
+          </button>
+
+          {/* 3-dot More Menu */}
+          <Dropdown
+            trigger={
+              <button className="p-2 rounded-xl text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer">
+                <FiMoreVertical size={16} />
+              </button>
+            }
+            items={[
+              {
+                label: "Search",
+                icon: <FiSearch size={13} />,
+                onClick: () => setSearchOpen(true),
+              },
+              {
+                label: "Details",
+                icon: <FiInfo size={13} />,
+                onClick: onToggleInfoPanel,
+              },
+              {
+                label: "Media",
+                icon: <FiFileText size={13} />,
+                onClick: () => navigate("/files"),
+              },
+              {
+                label: isMuted ? "Unmute" : "Mute",
+                icon: <span>{isMuted ? "🔔" : "🔕"}</span>,
+                onClick: () => {
+                  setIsMuted(!isMuted);
+                  showToast(isMuted ? "Chat unmuted" : "Chat muted", "info");
+                },
+              },
+              {
+                label: "Archive",
+                icon: <FiArchive size={13} />,
+                onClick: handleArchive,
+              },
+              { divider: true },
+              {
+                label: "Delete",
+                icon: <FiTrash size={13} />,
+                danger: true,
+                onClick: () => setConfirmDeleteChat(true),
+              },
+            ]}
+          />
         </div>
       </div>
 
@@ -837,25 +910,25 @@ export default function ChatArea({
             </div>
           )}
 
-          {/* Message Composer (Bottom Rounded Box) */}
-          <div className="p-3 border-t border-brand-border-light dark:border-white/5 bg-white/70 dark:bg-brand-panel-dark/80 backdrop-blur-md relative z-10">
+          {/* Message Composer (Bottom Rounded Box with Safe Area support) */}
+          <div className="p-3 pb-4 md:pb-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-brand-border-light dark:border-white/5 bg-white/70 dark:bg-brand-panel-dark/80 backdrop-blur-md relative z-10">
             {replyTo && (
-              <div className="flex items-center justify-between p-2 mb-2 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-[10px] font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-xs font-sans">
                 <div className="min-w-0">
-                  <p className="font-bold">Replying to {replyTo.sender}</p>
+                  <p className="font-bold text-brand-teal">Replying to {replyTo.sender}</p>
                   <p className="truncate opacity-75">{replyTo.message}</p>
                 </div>
                 <button
                   onClick={() => setReplyTo(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <FiX size={14} />
+                  <FiX size={15} />
                 </button>
               </div>
             )}
 
             {editingMessage && (
-              <div className="flex items-center justify-between p-2 mb-2 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-amber-500 text-[10px] font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-amber-500 text-xs font-sans">
                 <div className="min-w-0">
                   <p className="font-bold text-amber-500">Editing Message</p>
                   <p className="truncate opacity-75">
@@ -869,15 +942,15 @@ export default function ChatArea({
                   }}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <FiX size={14} />
+                  <FiX size={15} />
                 </button>
               </div>
             )}
 
             {attachment && (
-              <div className="flex items-center justify-between p-2 mb-2 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-[10px] font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-xs font-sans">
                 <div className="flex items-center gap-2 min-w-0">
-                  <FiFileText className="text-brand-teal" size={14} />
+                  <FiFileText className="text-brand-teal" size={15} />
                   <div className="min-w-0">
                     <p className="font-bold truncate">{attachment.name}</p>
                     <p className="opacity-75">{attachment.size}</p>
@@ -887,12 +960,12 @@ export default function ChatArea({
                   onClick={() => setAttachment(null)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <FiX size={14} />
+                  <FiX size={15} />
                 </button>
               </div>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -900,7 +973,7 @@ export default function ChatArea({
                 className="hidden"
               />
 
-              <div className="flex-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-2xl px-4 py-2 flex items-center gap-2 animate-all">
+              <div className="flex-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-2xl px-4 py-2.5 flex items-center gap-2.5 animate-all">
                 <textarea
                   ref={textareaRef}
                   value={messageText}
@@ -908,29 +981,29 @@ export default function ChatArea({
                   onKeyDown={handleKeyPress}
                   rows={1}
                   placeholder="Write your message..."
-                  className="flex-1 bg-transparent border-none focus:outline-none text-[11px] text-gray-900 dark:text-white placeholder-gray-400 font-sans resize-none py-1.5 leading-normal max-h-24 custom-scrollbar"
+                  className="flex-1 bg-transparent border-none focus:outline-none text-[13px] md:text-sm text-gray-900 dark:text-white placeholder-gray-400 font-sans resize-none py-1.5 leading-normal max-h-24 custom-scrollbar"
                 />
 
                 <button
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer"
+                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer flex-shrink-0"
                 >
-                  <FiSmile size={16} />
+                  <FiSmile size={18} />
                 </button>
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer"
+                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer flex-shrink-0"
                 >
-                  <FiPaperclip size={16} />
+                  <FiPaperclip size={18} />
                 </button>
               </div>
 
               <button
                 onClick={handleSend}
-                className="p-2.5 rounded-full bg-brand-teal hover:bg-brand-teal/95 text-white shadow-md shadow-brand-teal/20 transition flex items-center justify-center cursor-pointer flex-shrink-0"
+                className="p-3 rounded-full bg-brand-teal hover:bg-brand-teal/95 text-white shadow-md shadow-brand-teal/20 transition flex items-center justify-center cursor-pointer flex-shrink-0"
               >
-                <FiSend size={14} />
+                <FiSend size={16} />
               </button>
             </div>
 
@@ -1016,6 +1089,17 @@ export default function ChatArea({
         onConfirm={handleConfirmDelete}
         title="Delete Message"
         message="Are you sure you want to delete this message?"
+      />
+
+      <ConfirmDialog
+        isOpen={confirmDeleteChat}
+        onClose={() => setConfirmDeleteChat(false)}
+        onConfirm={() => {
+          handleDeleteChat();
+          setConfirmDeleteChat(false);
+        }}
+        title="Delete Conversation"
+        message="Are you sure you want to delete this conversation and all its messages? This action cannot be undone."
       />
 
       {/* Participants Bottom Sheet (Mobile) */}

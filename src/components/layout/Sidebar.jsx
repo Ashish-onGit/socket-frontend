@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   FiSearch, FiPlus, FiArchive, FiTrash2, FiChevronLeft,
   FiSliders, FiChevronRight, FiChevronDown, FiLogOut,
@@ -24,8 +25,10 @@ const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 const ConversationItem = React.memo(({
   chat, isActive, currentUser, onSelect, onPin, onArchive, onDelete, getRelativeTime,
 }) => (
-  <div
-    className={`group flex items-center justify-between p-3 my-1 rounded-xl transition-all cursor-pointer relative ${
+  <motion.div
+    whileHover={{ x: 3 }}
+    whileTap={{ scale: 0.98 }}
+    className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative ${
       isActive
         ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20"
         : "hover:bg-gray-100 dark:hover:bg-white/5"
@@ -34,26 +37,26 @@ const ConversationItem = React.memo(({
   >
     <div className="flex items-center gap-3 min-w-0 flex-1">
       <Avatar name={chat.username} size="md" isOnline={chat.isOnline} />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 font-sans">
         <div className="flex items-center justify-between">
-          <span className={`text-[11px] font-bold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
-            {chat.username}
+          <span className={`text-[13px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
+            {chat.recipient?.name || chat.username}
           </span>
-          <span className={`text-[9px] ${isActive ? "text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
+          <span className={`text-[10px] ${isActive ? "text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
             {getRelativeTime(chat.lastMsg?.timestamp)}
           </span>
         </div>
 
-        <div className="flex items-center justify-between mt-0.5">
-          <p className={`text-[10px] truncate max-w-[150px] ${isActive ? "text-white/90" : "text-gray-500 dark:text-gray-400"}`}>
+        <div className="flex items-center justify-between mt-1">
+          <p className={`text-[11px] truncate max-w-[155px] ${isActive ? "text-white/90" : "text-gray-500 dark:text-gray-450"}`}>
             {chat.lastMsg ? (
               chat.lastMsg.deleted ? (
-                <span className="italic opacity-80">Message deleted</span>
+                <span className="italic opacity-85">Message deleted</span>
               ) : (
                 chat.lastMsg.message
               )
             ) : (
-              <span className="italic opacity-60">No messages yet</span>
+              <span className="italic opacity-70">No messages yet</span>
             )}
           </p>
 
@@ -62,7 +65,7 @@ const ConversationItem = React.memo(({
               <BsPinAngleFill size={11} className={isActive ? "text-white" : "text-brand-teal"} />
             )}
             {chat.unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+              <span className="bg-red-500 text-white text-[9.5px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
                 {chat.unreadCount}
               </span>
             )}
@@ -100,7 +103,7 @@ const ConversationItem = React.memo(({
         ]}
       />
     </div>
-  </div>
+  </motion.div>
 ), (prev, next) => (
   prev.isActive === next.isActive &&
   prev.chat.username === next.chat.username &&
@@ -110,7 +113,9 @@ const ConversationItem = React.memo(({
   prev.chat.unreadCount === next.chat.unreadCount &&
   prev.chat.lastMsg?.timestamp === next.chat.lastMsg?.timestamp &&
   prev.chat.lastMsg?.message === next.chat.lastMsg?.message &&
-  prev.chat.lastMsg?.deleted === next.chat.lastMsg?.deleted
+  prev.chat.lastMsg?.deleted === next.chat.lastMsg?.deleted &&
+  prev.chat.recipient?.name === next.chat.recipient?.name &&
+  prev.chat.recipient?.avatar === next.chat.recipient?.avatar
 ));
 
 // ─── NewChatPanel ────────────────────────────────────────────────────────────
@@ -166,7 +171,7 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
 
     // If conversation already exists in Redux, just open it
     if (conversations[user.username]) {
-      onStarted(user.username);
+      onStarted(user.username, conversations[user.username].recipient || user);
       return;
     }
 
@@ -183,7 +188,7 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
       });
 
       if (res.ok) {
-        onStarted(user.username);
+        onStarted(user.username, user);
       } else {
         const data = await res.json();
         setError(data.error || "Failed to start conversation");
@@ -316,9 +321,9 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
   const showArchived = location.pathname === "/archived";
 
   // When a user is selected from the search panel
-  const handleConversationStarted = (username) => {
+  const handleConversationStarted = (username, recipient) => {
     // Ensure conversation exists in Redux (create if new)
-    dispatch(createConversation({ participant: username, currentUser: currentUser.username }));
+    dispatch(createConversation({ participant: username, currentUser: currentUser.username, recipient }));
     dispatch(setActiveConversation(username));
     setShowNewChat(false);
     navigate("/chat");
@@ -458,15 +463,15 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
       {/* Search and Add New Chat */}
       <div className="p-3 space-y-2">
         <div className="relative flex items-center">
-          <FiSearch className="absolute left-3 text-gray-400" size={14} />
+          <FiSearch className="absolute left-3.5 text-gray-400" size={14} />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2 pl-9 pr-9 text-[11px] rounded-xl bg-brand-bg-light dark:bg-zinc-800 border border-transparent focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+            className="w-full py-2.5 pl-10 pr-10 text-xs rounded-2xl bg-brand-bg-light dark:bg-zinc-800/80 border border-transparent focus:border-brand-teal/50 focus:bg-white dark:focus:bg-zinc-800 focus:ring-4 focus:ring-brand-teal/10 focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
           />
-          <button className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-pointer">
+          <button className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer">
             <FiSliders size={13} />
           </button>
         </div>

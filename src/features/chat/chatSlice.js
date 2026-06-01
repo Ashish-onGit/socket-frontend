@@ -35,13 +35,14 @@ const chatSlice = createSlice({
       }
     },
     createConversation: (state, action) => {
-      const { participant, currentUser } = action.payload;
+      const { participant, currentUser, recipient } = action.payload;
       if (!state.conversations[participant]) {
         state.conversations[participant] = {
           messages: [],
           isPinned: false,
           isArchived: false,
-          unreadCount: 0
+          unreadCount: 0,
+          recipient: recipient || { username: participant }
         };
         saveChats(currentUser, state.conversations);
       }
