@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FiSearch, FiSettings, FiPlus, FiArchive, FiTrash2, FiChevronLeft, FiMenu, FiSliders, FiChevronRight } from "react-icons/fi";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiSearch, FiSettings, FiPlus, FiArchive, FiTrash2, FiChevronLeft, FiMenu, FiSliders, FiChevronRight, FiChevronDown, FiLogOut } from "react-icons/fi";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import ConfirmDialog from "../common/ConfirmDialog";
 import { setActiveConversation, createConversation, pinConversation, archiveConversation, deleteConversation } from "../../features/chat/chatSlice";
@@ -66,15 +67,15 @@ const ConversationItem = React.memo(({
         </div>
       </div>
 
-      {/* Dropdown Options */}
+      {/* Dropdown Options - always visible (no hover delay) for better mobile accessibility */}
       <div
-        className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0"
+        className="opacity-75 hover:opacity-100 ml-2 flex-shrink-0"
         onClick={(e) => e.stopPropagation()}
       >
         <Dropdown
           trigger={
-            <button className={`p-1.5 rounded-lg hover:bg-black/10 transition-colors ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"}`}>
-              •••
+            <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
+              <FiChevronDown size={14} />
             </button>
           }
           items={[
@@ -114,7 +115,7 @@ const ConversationItem = React.memo(({
   );
 });
 
-export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSettings }) {
+export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSettings, onLogout }) {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
   const conversations = useSelector((state) => state.chat.conversations);
@@ -124,6 +125,9 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
   const [newChatUser, setNewChatUser] = useState("");
   const [showAddChat, setShowAddChat] = useState(false);
   const [confirmDeleteChat, setConfirmDeleteChat] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const showArchived = location.pathname === "/archived";
 
   const handleStartChat = (e) => {
     e.preventDefault();
@@ -143,8 +147,11 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
       lastMsg: details.messages[details.messages.length - 1] || null
     }))
     .filter((c) => {
-      if (searchQuery.trim() === "") return !c.isArchived;
-      return c.username.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = searchQuery.trim() === "" || c.username.toLowerCase().includes(searchQuery.toLowerCase());
+      if (showArchived) {
+        return c.isArchived && matchesSearch;
+      }
+      return !c.isArchived && matchesSearch;
     })
     .sort((a, b) => {
       const timeA = a.lastMsg ? a.lastMsg.timestamp : 0;
@@ -169,12 +176,58 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
     <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark relative z-10 select-none">
       {/* Sidebar Header */}
       <div className="h-16 px-6 flex items-center justify-between border-b border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-panel-dark select-none flex-shrink-0">
-        <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase font-sans">
-          Conversations
-        </span>
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider">Live</span>
+          {showArchived && (
+            <button 
+              onClick={() => navigate("/chat")}
+              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 hover:text-gray-800 transition cursor-pointer flex items-center justify-center mr-1"
+              title="Back"
+            >
+              <FiChevronLeft size={16} />
+            </button>
+          )}
+          <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase font-sans">
+            {showArchived ? "Archived" : "Conversations"}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {!showArchived && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider">Live</span>
+            </div>
+          )}
+
+          {/* Archived Chats Toggle */}
+          {!showArchived && (
+            <button 
+              onClick={() => navigate("/archived")}
+              className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition cursor-pointer flex items-center justify-center"
+              title="Archived Chats"
+            >
+              <FiArchive size={14} />
+            </button>
+          )}
+
+          {/* Theme switcher */}
+          <button 
+            onClick={toggleTheme}
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition cursor-pointer flex items-center justify-center"
+            title="Toggle Theme"
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
+
+          {/* Logout button */}
+          {onLogout && (
+            <button 
+              onClick={onLogout}
+              className="p-1 rounded-lg text-gray-400 hover:text-red-500 transition cursor-pointer flex items-center justify-center"
+              title="Logout"
+            >
+              <FiLogOut size={13} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -206,38 +259,40 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
           </button>
         </div>
         
-        {showAddChat ? (
-          <form onSubmit={handleStartChat} className="flex gap-1.5 mt-2">
-            <input
-              type="text"
-              placeholder="Username to chat..."
-              value={newChatUser}
-              onChange={(e) => setNewChatUser(e.target.value)}
-              className="flex-1 px-3 py-2 text-[10px] rounded-xl bg-white dark:bg-zinc-800 border border-brand-border-light dark:border-white/10 focus:outline-none text-gray-900 dark:text-white font-sans"
-              autoFocus
-            />
+        {!showArchived && (
+          showAddChat ? (
+            <form onSubmit={handleStartChat} className="flex gap-1.5 mt-2">
+              <input
+                type="text"
+                placeholder="Username to chat..."
+                value={newChatUser}
+                onChange={(e) => setNewChatUser(e.target.value)}
+                className="flex-1 px-3 py-2 text-[10px] rounded-xl bg-white dark:bg-zinc-800 border border-brand-border-light dark:border-white/10 focus:outline-none text-gray-900 dark:text-white font-sans"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 text-[10px] font-bold bg-brand-teal hover:bg-brand-teal/90 text-white rounded-xl transition cursor-pointer"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAddChat(false); setNewChatUser(""); }}
+                className="px-2 py-1.5 text-[10px] font-bold bg-gray-200 dark:bg-white/10 hover:bg-gray-300 text-gray-700 dark:text-gray-200 rounded-xl cursor-pointer"
+              >
+                ✕
+              </button>
+            </form>
+          ) : (
             <button
-              type="submit"
-              className="px-3 py-1.5 text-[10px] font-bold bg-brand-teal hover:bg-brand-teal/90 text-white rounded-xl transition cursor-pointer"
+              onClick={() => setShowAddChat(true)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold text-brand-teal bg-brand-teal/5 hover:bg-brand-teal/10 rounded-xl transition border border-dashed border-brand-teal/20 cursor-pointer"
             >
-              Add
+              <FiPlus size={13} />
+              Add New Conversation
             </button>
-            <button
-              type="button"
-              onClick={() => { setShowAddChat(false); setNewChatUser(""); }}
-              className="px-2 py-1.5 text-[10px] font-bold bg-gray-200 dark:bg-white/10 hover:bg-gray-300 text-gray-700 dark:text-gray-200 rounded-xl cursor-pointer"
-            >
-              ✕
-            </button>
-          </form>
-        ) : (
-          <button
-            onClick={() => setShowAddChat(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold text-brand-teal bg-brand-teal/5 hover:bg-brand-teal/10 rounded-xl transition border border-dashed border-brand-teal/20 cursor-pointer"
-          >
-            <FiPlus size={13} />
-            Add New Conversation
-          </button>
+          )
         )}
       </div>
 
@@ -245,7 +300,7 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
       <div className="flex-1 overflow-y-auto custom-scrollbar px-2 space-y-4">
         {chatsList.length === 0 ? (
           <div className="p-8 text-center text-gray-400 dark:text-gray-500 text-xs">
-            No active conversations
+            {showArchived ? "No archived conversations" : "No active conversations"}
           </div>
         ) : (
           <>

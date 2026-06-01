@@ -25,7 +25,7 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const success = await onLogin(username.trim(), pass.trim());
       if (success) {
-        showToast("Welcome to Aether Chat!", "success");
+        showToast("Welcome to SocketChat!", "success");
       } else {
         showToast("Invalid credentials", "error");
         setError("Invalid credentials. Try Ashish/Ashish, Gauri/Gauri, or register a new account.");
@@ -50,7 +50,7 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
           
           {/* Logo & Theme Switcher Header */}
           <div className="flex justify-between items-center z-10">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 
@@ -58,7 +58,7 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
           <div className="flex-1 flex flex-col justify-center items-center z-10 my-4 select-none pointer-events-none">
             <img 
               src="/login_visual.png" 
-              alt="Aether Chat Visual Representation" 
+              alt="SocketChat Visual Representation" 
               className="max-h-[300px] object-contain animate-float drop-shadow-2xl" 
             />
           </div>
@@ -77,7 +77,7 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
           
           {/* Mobile-only Logo & Theme Switcher Header */}
           <div className="md:hidden flex justify-between items-center mb-8">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 

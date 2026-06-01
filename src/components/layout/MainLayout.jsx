@@ -11,6 +11,7 @@ import ChatArea from "./ChatArea";
 import InfoPanel from "./InfoPanel";
 import Avatar from "../common/Avatar";
 import LeftNavDock from "./LeftNavDock";
+import ConfirmDialog from "../common/ConfirmDialog";
 import { useToast } from "../common/ToastContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -71,13 +72,14 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
   // Layout toggles
   const [showInfoPanel, setShowInfoPanel] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // States managed locally
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [typingUsers, setTypingUsers] = useState({}); // { [username]: boolean }
 
   // Settings states
-  const [settingsBio, setSettingsBio] = useState(currentUser?.bio || "Hey there! I am using Aether Chat.");
+  const [settingsBio, setSettingsBio] = useState(currentUser?.bio || "Hey there! I am using SocketChat.");
 
 
 
@@ -253,7 +255,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         handleSaveSettings={handleSaveSettings}
         theme={theme}
         toggleTheme={toggleTheme}
-        onLogout={onLogout}
+        onLogout={() => setShowLogoutConfirm(true)}
       />
     );
   } else {
@@ -264,6 +266,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         toggleTheme={toggleTheme}
         onlineUsers={onlineUsers}
         onOpenSettings={() => navigate("/settings")}
+        onLogout={() => setShowLogoutConfirm(true)}
       />
     );
     mainElement = (
@@ -279,7 +282,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
   // Settings is always full-page (no sidebar); treat it like an active detail so mainElement shows on mobile
   const isSettingsPath = currentPath.startsWith("/settings");
-  const isMobileDetailActive = isSettingsPath || (currentPath === "/chat" ? !!activeConversation : (
+  const isMobileDetailActive = isSettingsPath || ((currentPath === "/chat" || currentPath === "/archived") ? !!activeConversation : (
     (currentPath === "/channels" && !!searchParams.get("name")) ||
     (currentPath === "/files" && !!searchParams.get("category")) ||
     (currentPath === "/contacts" && !!searchParams.get("username")) ||
@@ -454,7 +457,9 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         {isMobileNavVisible && (
           <div className="md:hidden h-14 bg-white dark:bg-brand-panel-dark border-t border-brand-border-light dark:border-white/5 flex items-center justify-around z-20 flex-shrink-0 select-none pb-safe">
             {mobileNavItems.map((item, idx) => {
-              const isActive = item.path ? currentPath.startsWith(item.path) : false;
+              const isActive = item.path === "/chat"
+                ? (currentPath.startsWith("/chat") || currentPath.startsWith("/archived"))
+                : (item.path ? currentPath.startsWith(item.path) : false);
               return (
                 <button
                   key={idx}
@@ -479,6 +484,16 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         )}
       </div>
 
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={onLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of SocketChat?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

@@ -210,7 +210,7 @@ function App() {
           } 
         />
 
-        {["/chat", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
+        {["/chat", "/archived", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
           <Route 
             key={path}
             path={path} 

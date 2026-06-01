@@ -62,7 +62,7 @@ export default function Register({ onRegister, switchToLogin, theme, toggleTheme
           
           {/* Logo & Theme Switcher Header */}
           <div className="flex justify-between items-center z-10">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 
@@ -70,7 +70,7 @@ export default function Register({ onRegister, switchToLogin, theme, toggleTheme
           <div className="flex-1 flex flex-col justify-center items-center z-10 my-4 select-none pointer-events-none">
             <img 
               src="/login_visual.png" 
-              alt="Aether Chat Visual Representation" 
+              alt="SocketChat Visual Representation" 
               className="max-h-[300px] object-contain animate-float drop-shadow-2xl" 
             />
           </div>
@@ -89,7 +89,7 @@ export default function Register({ onRegister, switchToLogin, theme, toggleTheme
           
           {/* Mobile-only Logo & Theme Switcher Header */}
           <div className="md:hidden flex justify-between items-center mb-8">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ AETHER</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 

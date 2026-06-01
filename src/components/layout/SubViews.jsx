@@ -311,7 +311,7 @@ export function ChannelsMainArea() {
       setMessages(JSON.parse(cached));
     } else {
       setMessages([
-        { sender: "Ashish", text: `Welcome to Aether channel ${activeChannel}! Feel free to converse here.`, time: "11:00 AM" },
+        { sender: "Ashish", text: `Welcome to SocketChat channel ${activeChannel}! Feel free to converse here.`, time: "11:00 AM" },
         { sender: "Gauri", text: "Excited to test this live dashboard! Design looks premium.", time: "11:02 AM" }
       ]);
     }
@@ -523,7 +523,7 @@ export function ContactsMainArea({ onlineUsers = [] }) {
             <div className="flex justify-between pl-2 pr-2">
               <span className="text-gray-400 font-medium">Bio Status</span>
               <span className="font-semibold text-gray-800 dark:text-gray-200 italic max-w-[160px] truncate">
-                {selectedUser === "Ashish" ? "Senior MERN stack lead" : selectedUser === "Gauri" ? "Visual UI designer" : "Aether contributor"}
+                {selectedUser === "Ashish" ? "Senior MERN stack lead" : selectedUser === "Gauri" ? "Visual UI designer" : "SocketChat contributor"}
               </span>
             </div>
             <div className="flex justify-between pl-2 pr-2">
@@ -968,7 +968,7 @@ export function SettingsMainArea({
               {[
                 { icon: <FiBell size={14} />, bg: "bg-purple-500/10 text-purple-500", label: "Message Notifications", desc: "Get browser push notifications", badge: "ON", bc: "bg-purple-500/10 text-purple-500" },
                 { icon: <FiWifi size={14} />, bg: "bg-emerald-500/10 text-emerald-500", label: "Connection Node", desc: "Connected via Socket.io channels", badge: "LIVE", bc: "bg-emerald-500/10 text-emerald-500" },
-                { icon: <FiInfo size={14} />, bg: "bg-blue-500/10 text-blue-500", label: "Workspace Version", desc: "Aether Premium Desktop build", badge: "v1.0", bc: "bg-gray-100 dark:bg-white/5 text-gray-400" },
+                { icon: <FiInfo size={14} />, bg: "bg-blue-500/10 text-blue-500", label: "Workspace Version", desc: "SocketChat Premium Desktop build", badge: "v1.0", bc: "bg-gray-100 dark:bg-white/5 text-gray-400" },
               ].map((row, i) => (
                 <div key={i} className="flex items-center gap-4 px-5 py-3.5">
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${row.bg}`}>{row.icon}</div>
@@ -994,7 +994,7 @@ export function SettingsMainArea({
             <div className="p-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10">
                 <div>
-                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Sign out of Aether Workspace</p>
+                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Sign out of SocketChat Workspace</p>
                   <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">Ends your session and clears browser data store safely.</p>
                 </div>
                 <button

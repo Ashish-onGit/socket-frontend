@@ -574,7 +574,7 @@ export default function ChatArea({
         <div className="text-center max-w-sm space-y-3 z-10 select-none">
           <div className="text-5xl animate-float">💬</div>
           <h3 className="text-sm font-extrabold text-gray-800 dark:text-gray-200 font-sans">
-            Aether Messaging
+            SocketChat Messaging
           </h3>
           <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed font-sans">
             Start a premium, real-time messaging channel. Search or add a user

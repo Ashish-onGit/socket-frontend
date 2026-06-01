@@ -35,7 +35,9 @@ export default function LeftNavDock({ theme, toggleTheme, onOpenSettings }) {
       {/* Navigation Icons */}
       <div className="flex flex-col gap-6 w-full items-center">
         {navItems.map((item, idx) => {
-          const isActive = location.pathname.startsWith(item.path);
+          const isActive = item.path === "/chat"
+            ? (location.pathname.startsWith("/chat") || location.pathname.startsWith("/archived"))
+            : location.pathname.startsWith(item.path);
           return (
             <Tooltip key={idx} text={item.label} position="right">
               <button

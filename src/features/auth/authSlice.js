@@ -12,7 +12,7 @@ const authSlice = createSlice({
     loginSuccess: (state, action) => {
       // Setup default bio and initials details if not exist
       state.user = {
-        bio: "Hey there! I am using Aether Chat.",
+        bio: "Hey there! I am using SocketChat.",
         ...action.payload
       };
       localStorage.setItem('user', JSON.stringify(state.user));
