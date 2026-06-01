@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiClock, FiFileText, FiEye, FiUsers, FiSettings } from "react-icons/fi";
 import { updateProfile } from "../../features/auth/authSlice";
 import { 
-  loadUserChats, addMessage, editMessage, deleteMessage, toggleReaction, markAsRead 
+  loadUserChats, addMessage, editMessage, deleteMessage, toggleReaction, markAsRead, setConversations 
 } from "../../features/chat/chatSlice";
 import Sidebar from "./Sidebar";
 import ChatArea from "./ChatArea";
@@ -83,12 +83,28 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
 
 
-  // Load chats on login
+  // Load chats from database on login
   useEffect(() => {
-    if (currentUser?.username) {
-      dispatch(loadUserChats(currentUser.username));
+    if (currentUser?.token) {
+      const fetchChats = async () => {
+        try {
+          const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+          const res = await fetch(`${backendURL}/api/conversations`, {
+            headers: {
+              "Authorization": `Bearer ${currentUser.token}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            dispatch(setConversations(data));
+          }
+        } catch (err) {
+          console.error("Failed to load chats from server:", err);
+        }
+      };
+      fetchChats();
     }
-  }, [currentUser?.username, dispatch]);
+  }, [currentUser?.token, dispatch]);
 
   // Hydrate settings bio
   useEffect(() => {

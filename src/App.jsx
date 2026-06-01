@@ -90,7 +90,8 @@ function App() {
 
   // Connect socket on login/refresh
   useEffect(() => {
-    if (user?.username) {
+    if (user?.token) {
+      socket.auth = { token: user.token };
       socket.connect();
     } else {
       socket.disconnect();
@@ -136,15 +137,16 @@ function App() {
         body: JSON.stringify({ username, password: pass }),
       });
 
+      const data = await res.json();
       if (res.ok) {
-        dispatch(loginSuccess({ username }));
+        dispatch(loginSuccess(data));
         navigate("/chat");
-        return true;
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Invalid credentials" };
       }
-      return false;
     } catch (err) {
-      showToast("Failed to connect to authentication server", "error");
-      return false;
+      return { success: false, error: "Failed to connect to authentication server" };
     }
   };
 
@@ -156,14 +158,15 @@ function App() {
         body: JSON.stringify({ username, password: pass }),
       });
 
+      const data = await res.json();
       if (res.ok) {
         navigate("/login");
-        return true;
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || "Registration failed" };
       }
-      return false;
     } catch (err) {
-      showToast("Failed to connect to registration server", "error");
-      return false;
+      return { success: false, error: "Failed to connect to registration server" };
     }
   };
 

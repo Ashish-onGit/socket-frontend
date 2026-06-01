@@ -11,9 +11,11 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (state, action) => {
       // Setup default bio and initials details if not exist
+      const { user, token } = action.payload;
       state.user = {
         bio: "Hey there! I am using SocketChat.",
-        ...action.payload
+        ...user,
+        token
       };
       localStorage.setItem('user', JSON.stringify(state.user));
     },

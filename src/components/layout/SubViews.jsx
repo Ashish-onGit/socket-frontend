@@ -402,16 +402,29 @@ export function ContactsSidebar({ onlineUsers }) {
   const searchParams = new URLSearchParams(location.search);
   const activeUser = searchParams.get("username") || "";
   const [search, setSearch] = useState("");
-  
-  const users = [
-    { name: "Ashish", bio: "Senior MERN stack lead", role: "Admin", isOnline: true },
-    { name: "Gauri", bio: "Visual UI designer", role: "Moderator", isOnline: true },
-    { name: "John_Doe", bio: "Staff Architect", role: "Member", isOnline: false },
-    { name: "Alice_Smith", bio: "Frontend developer", role: "Member", isOnline: false },
-    { name: "Bob_Taylor", bio: "Quality QA tester", role: "Member", isOnline: false }
-  ];
+  const [usersList, setUsersList] = useState([]);
+  const currentUser = useSelector((state) => state.auth.user);
 
-  const filtered = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+        const res = await fetch(`${backendURL}/api/users/search?query=${search}`, {
+          headers: {
+            "Authorization": `Bearer ${currentUser?.token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsersList(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch search users:", err);
+      }
+    };
+
+    fetchUsers();
+  }, [search, currentUser?.token]);
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
@@ -433,26 +446,31 @@ export function ContactsSidebar({ onlineUsers }) {
 
         <span className="text-[9px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest block mb-3">Members</span>
         <div className="space-y-1 overflow-y-auto custom-scrollbar flex-1">
-          {filtered.map((usr) => {
-            const isActive = activeUser === usr.name;
-            return (
-              <div 
-                key={usr.name} 
-                onClick={() => navigate(`/contacts?username=${usr.name}`)}
-                className={`flex items-center justify-between p-2.5 rounded-xl transition cursor-pointer ${
-                  isActive ? "bg-brand-teal text-white shadow-md shadow-brand-teal/20" : "hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Avatar name={usr.name} size="sm" isOnline={onlineUsers.includes(usr.name) || usr.isOnline} />
-                  <div className="text-left font-sans min-w-0">
-                    <p className={`text-[11px] font-bold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{usr.name}</p>
-                    <p className={`text-[9px] truncate ${isActive ? "text-white/85" : "text-gray-400"} mt-0.5`}>{usr.bio}</p>
+          {usersList.length === 0 ? (
+            <div className="text-center p-4 text-[10px] text-gray-400">No users found</div>
+          ) : (
+            usersList.map((usr) => {
+              const isActive = activeUser === usr.username;
+              const isOnline = onlineUsers.includes(usr.username) || usr.isOnline;
+              return (
+                <div 
+                  key={usr.username} 
+                  onClick={() => navigate(`/contacts?username=${usr.username}`)}
+                  className={`flex items-center justify-between p-2.5 rounded-xl transition cursor-pointer ${
+                    isActive ? "bg-brand-teal text-white shadow-md shadow-brand-teal/20" : "hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar name={usr.username} size="sm" isOnline={isOnline} />
+                    <div className="text-left font-sans min-w-0">
+                      <p className={`text-[11px] font-bold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{usr.name || usr.username}</p>
+                      <p className={`text-[9px] truncate ${isActive ? "text-white/85" : "text-gray-400"} mt-0.5`}>{usr.bio || "Available"}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

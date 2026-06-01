@@ -1,11 +1,20 @@
 import React, { useState } from "react";
-import { AiOutlineEye, AiOutlineEyeInvisible, AiOutlineLoading3Quarters } from "react-icons/ai";
+import {
+  AiOutlineEye,
+  AiOutlineEyeInvisible,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 import { FiUser, FiLock } from "react-icons/fi";
 import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
 import { useToast } from "./common/ToastContext";
 import ThemeSwitcher from "./common/ThemeSwitcher";
 
-export default function Login({ onLogin, switchToRegister, theme, toggleTheme }) {
+export default function Login({
+  onLogin,
+  switchToRegister,
+  theme,
+  toggleTheme,
+}) {
   const { showToast } = useToast();
   const [username, setUsername] = useState("");
   const [pass, setPass] = useState("");
@@ -23,12 +32,12 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const success = await onLogin(username.trim(), pass.trim());
-      if (success) {
+      const result = await onLogin(username.trim(), pass.trim());
+      if (result.success) {
         showToast("Welcome to SocketChat!", "success");
       } else {
-        showToast("Invalid credentials", "error");
-        setError("Invalid credentials. Try Ashish/Ashish, Gauri/Gauri, or register a new account.");
+        showToast(result.error, "error");
+        setError(result.error);
       }
     } catch (err) {
       showToast("Server connection error", "error");
@@ -39,50 +48,53 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
 
   return (
     <div className="w-screen h-screen relative flex items-center justify-center p-0 md:p-6 bg-brand-bg-light dark:bg-brand-bg-dark overflow-hidden font-sans transition-colors duration-200">
-      
-
-
       {/* Main split-panel container */}
       <div className="w-full h-full md:max-w-5xl md:h-[80dvh] rounded-none md:rounded-[2.5rem] overflow-hidden glass-panel premium-card flex relative z-10 border border-white/20 dark:border-white/5 shadow-2xl">
-        
         {/* Left Side: 3D Illustration Panel (Visible on Desktop) */}
         <div className="hidden md:flex md:w-1/2 flex-col justify-between p-10 bg-gradient-to-tr from-brand-50 to-indigo-100 dark:from-[#1E1B4B]/10 dark:to-zinc-950/30 relative overflow-hidden border-r border-gray-100 dark:border-white/5">
-          
           {/* Logo & Theme Switcher Header */}
           <div className="flex justify-between items-center z-10">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">
+              ⚡ SOCKETCHAT
+            </span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 
           {/* Centered Image */}
           <div className="flex-1 flex flex-col justify-center items-center z-10 my-4 select-none pointer-events-none">
-            <img 
-              src="/login_visual.png" 
-              alt="SocketChat Visual Representation" 
-              className="max-h-[300px] object-contain animate-float drop-shadow-2xl" 
+            <img
+              src="/login_visual.png"
+              alt="SocketChat Visual Representation"
+              className="max-h-[300px] object-contain animate-float drop-shadow-2xl"
             />
           </div>
 
           {/* Bottom Descriptive Panel */}
           <div className="z-10">
-            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 font-sans">Connecting People Instantly</h3>
+            <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 font-sans">
+              Connecting People Instantly
+            </h3>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed font-sans">
-              Experience latency-free private messaging built with absolute glassmorphism style and modern architecture.
+              Experience latency-free private messaging built with absolute
+              glassmorphism style and modern architecture.
             </p>
           </div>
         </div>
 
         {/* Right Side: Form Panel */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white/80 dark:bg-zinc-900/70 backdrop-blur-md relative z-10">
-          
           {/* Mobile-only Logo & Theme Switcher Header */}
           <div className="md:hidden flex justify-between items-center mb-8">
-            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">⚡ SOCKETCHAT</span>
+            <span className="text-sm font-extrabold tracking-widest text-indigo-600 dark:text-indigo-400 font-sans">
+              ⚡ SOCKETCHAT
+            </span>
             <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
           </div>
 
           <div className="text-left mb-6">
-            <h2 className="text-2xl font-extrabold tracking-tight font-sans text-gray-900 dark:text-white">Sign in</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight font-sans text-gray-900 dark:text-white">
+              Sign in
+            </h2>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 font-sans">
               Welcome back! Enter your login details below.
             </p>
@@ -100,7 +112,10 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
                 Username
               </label>
               <div className="relative flex items-center">
-                <FiUser className="absolute left-4 text-gray-400 dark:text-zinc-500" size={14} />
+                <FiUser
+                  className="absolute left-4 text-gray-400 dark:text-zinc-500"
+                  size={14}
+                />
                 <input
                   type="text"
                   value={username}
@@ -116,7 +131,10 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
                 Password
               </label>
               <div className="relative flex items-center">
-                <FiLock className="absolute left-4 text-gray-400 dark:text-zinc-500" size={14} />
+                <FiLock
+                  className="absolute left-4 text-gray-400 dark:text-zinc-500"
+                  size={14}
+                />
                 <input
                   type={showPass ? "text" : "password"}
                   value={pass}
@@ -130,7 +148,11 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
                 >
-                  {showPass ? <AiOutlineEyeInvisible size={16} /> : <AiOutlineEye size={16} />}
+                  {showPass ? (
+                    <AiOutlineEyeInvisible size={16} />
+                  ) : (
+                    <AiOutlineEye size={16} />
+                  )}
                 </button>
               </div>
             </div>
@@ -142,7 +164,10 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
             >
               {loading ? (
                 <>
-                  <AiOutlineLoading3Quarters className="animate-spin" size={14} />
+                  <AiOutlineLoading3Quarters
+                    className="animate-spin"
+                    size={14}
+                  />
                   Accessing chat...
                 </>
               ) : (
@@ -176,7 +201,15 @@ export default function Login({ onLogin, switchToRegister, theme, toggleTheme })
 
           {/* Terms Footer */}
           <p className="text-[10px] text-center text-gray-400 dark:text-zinc-500 mt-6 leading-relaxed font-sans">
-            By signing in you agree to our <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">Terms of Service</span> and <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">Privacy Policy</span>.
+            By signing in you agree to our{" "}
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
+              Terms of Service
+            </span>{" "}
+            and{" "}
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
+              Privacy Policy
+            </span>
+            .
           </p>
 
           <p className="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 pl-1 font-sans">

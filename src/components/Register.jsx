@@ -35,12 +35,12 @@ export default function Register({ onRegister, switchToLogin, theme, toggleTheme
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      const success = await onRegister(username.trim(), pass.trim());
-      if (success) {
+      const result = await onRegister(username.trim(), pass.trim());
+      if (result.success) {
         showToast("Registration successful! Please login.", "success");
       } else {
-        setError("Username already taken. Please try another one.");
-        showToast("Registration failed", "error");
+        setError(result.error);
+        showToast(result.error, "error");
       }
     } catch (err) {
       showToast("Server error during registration", "error");

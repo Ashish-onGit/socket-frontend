@@ -170,6 +170,9 @@ const chatSlice = createSlice({
     },
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
+    },
+    setConversations: (state, action) => {
+      state.conversations = action.payload;
     }
   },
 });
@@ -187,7 +190,8 @@ export const {
   deleteMessage,
   toggleReaction,
   markAsRead,
-  setSearchQuery
+  setSearchQuery,
+  setConversations
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
