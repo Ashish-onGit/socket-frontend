@@ -1,10 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMessageSquare, FiFileText, FiHash, FiUsers, FiSettings } from "react-icons/fi";
+import {
+  FiMessageSquare,
+  FiFileText,
+  FiHash,
+  FiUsers,
+  FiSettings,
+  FiArchive,
+  FiUser,
+} from "react-icons/fi";
 import { updateProfile } from "../../features/auth/authSlice";
-import { 
-  loadUserChats, addMessage, editMessage, deleteMessage, toggleReaction, markAsRead, setConversations 
+import {
+  loadUserChats,
+  addMessage,
+  editMessage,
+  deleteMessage,
+  toggleReaction,
+  markAsRead,
+  setConversations,
 } from "../../features/chat/chatSlice";
 import Sidebar from "./Sidebar";
 import ChatArea from "./ChatArea";
@@ -14,17 +28,28 @@ import LeftNavDock from "./LeftNavDock";
 import ConfirmDialog from "../common/ConfirmDialog";
 import { useToast } from "../common/ToastContext";
 import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  FilesSidebar, FilesMainArea, ChannelsSidebar, ChannelsMainArea, 
-  ContactsSidebar, ContactsMainArea, AnalyticsSidebar, AnalyticsMainArea, 
-  CallsSidebar, CallsMainArea, SettingsSidebar, SettingsMainArea
+import {
+  FilesSidebar,
+  FilesMainArea,
+  ChannelsSidebar,
+  ChannelsMainArea,
+  ContactsSidebar,
+  ContactsMainArea,
+  AnalyticsSidebar,
+  AnalyticsMainArea,
+  CallsSidebar,
+  CallsMainArea,
+  SettingsSidebar,
+  SettingsMainArea,
 } from "./SubViews";
 
 export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const currentUser = useSelector((state) => state.auth.user);
-  const activeConversation = useSelector((state) => state.chat.activeConversation);
+  const activeConversation = useSelector(
+    (state) => state.chat.activeConversation,
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -52,7 +77,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         }
       }
     },
-    [isResizing]
+    [isResizing],
   );
 
   useEffect(() => {
@@ -79,20 +104,21 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   const [typingUsers, setTypingUsers] = useState({}); // { [username]: boolean }
 
   // Settings states
-  const [settingsBio, setSettingsBio] = useState(currentUser?.bio || "Hey there! I am using SocketChat.");
-
-
+  const [settingsBio, setSettingsBio] = useState(
+    currentUser?.bio || "Hey there! I am using SocketChat.",
+  );
 
   // Load chats from database on login
   useEffect(() => {
     if (currentUser?.token) {
       const fetchChats = async () => {
         try {
-          const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+          const backendURL =
+            import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
           const res = await fetch(`${backendURL}/api/conversations`, {
             headers: {
-              "Authorization": `Bearer ${currentUser.token}`
-            }
+              Authorization: `Bearer ${currentUser.token}`,
+            },
           });
           if (res.ok) {
             const data = await res.json();
@@ -127,7 +153,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     };
 
     handleDesktopRedirect();
-    
+
     window.addEventListener("resize", handleDesktopRedirect);
     return () => window.removeEventListener("resize", handleDesktopRedirect);
   }, [currentPath, location.search, navigate]);
@@ -152,7 +178,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         addMessage({
           message: data,
           currentUser: currentUser.username,
-        })
+        }),
       );
       // Auto-consider outgoing messages as read by other user if they replied
       dispatch(
@@ -160,7 +186,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           participant: data.sender,
           currentUser: currentUser.username,
           fromSelf: false,
-        })
+        }),
       );
       // showToast(`New message from ${data.sender}`, "info");
     });
@@ -173,7 +199,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           newContent: data.newContent,
           participant: data.sender,
           currentUser: currentUser.username,
-        })
+        }),
       );
     });
 
@@ -183,7 +209,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           messageId: data.id,
           participant: data.sender,
           currentUser: currentUser.username,
-        })
+        }),
       );
     });
 
@@ -195,7 +221,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           username: data.username,
           participant: data.sender,
           currentUser: currentUser.username,
-        })
+        }),
       );
     });
 
@@ -205,7 +231,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           participant: data.sender,
           currentUser: currentUser.username,
           fromSelf: false,
-        })
+        }),
       );
     });
 
@@ -229,8 +255,6 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     };
   }, [socket, currentUser?.username, dispatch, showToast]);
 
-
-
   const handleSaveSettings = () => {
     dispatch(updateProfile({ bio: settingsBio }));
     showToast("Profile settings updated", "success");
@@ -247,7 +271,11 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   let showRightPanel = false;
 
   if (currentPath.startsWith("/files")) {
-    sidebarElement = <FilesSidebar onCategorySelect={(cat) => navigate(`/files?category=${cat}`)} />;
+    sidebarElement = (
+      <FilesSidebar
+        onCategorySelect={(cat) => navigate(`/files?category=${cat}`)}
+      />
+    );
     mainElement = <FilesMainArea />;
   } else if (currentPath.startsWith("/channels")) {
     sidebarElement = <ChannelsSidebar />;
@@ -298,35 +326,37 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
   // Settings is always full-page (no sidebar); treat it like an active detail so mainElement shows on mobile
   const isSettingsPath = currentPath.startsWith("/settings");
-  const isMobileDetailActive = isSettingsPath || ((currentPath === "/chat" || currentPath === "/archived") ? !!activeConversation : (
-    (currentPath === "/channels" && !!searchParams.get("name")) ||
-    (currentPath === "/files" && !!searchParams.get("category")) ||
-    (currentPath === "/contacts" && !!searchParams.get("username")) ||
-    (currentPath === "/calls" && !!searchParams.get("dial"))
-  ));
+  const isMobileDetailActive =
+    isSettingsPath ||
+    (currentPath === "/chat" || currentPath === "/archived"
+      ? !!activeConversation
+      : (currentPath === "/channels" && !!searchParams.get("name")) ||
+        (currentPath === "/files" && !!searchParams.get("category")) ||
+        (currentPath === "/contacts" && !!searchParams.get("username")) ||
+        (currentPath === "/calls" && !!searchParams.get("dial")));
 
   // Bottom nav always visible on settings; hidden on detail views in other sections
-  const isMobileNavVisible = isSettingsPath || !isMobileDetailActive || currentPath.startsWith("/analytics");
+  const isMobileNavVisible =
+    isSettingsPath ||
+    !isMobileDetailActive ||
+    currentPath.startsWith("/analytics");
 
   const mobileNavItems = [
     { icon: <FiMessageSquare size={18} />, label: "Chats", path: "/chat" },
+    { icon: <FiArchive size={18} />, label: "Archive", path: "/archived" },
     { icon: <FiFileText size={18} />, label: "Files", path: "/files" },
     { icon: <FiHash size={18} />, label: "Channels", path: "/channels" },
-    { icon: <FiUsers size={18} />, label: "Contacts", path: "/contacts" },
-    { icon: <FiSettings size={18} />, label: "Settings", path: "/settings" },
+    { icon: <FiUser size={18} />, label: "Profile", path: "/settings" },
   ];
 
   const isMobile = windowWidth < 768;
 
   return (
     <div className="w-screen h-[100dvh] relative flex items-center justify-center p-0 md:p-4 bg-brand-bg-light dark:bg-brand-bg-dark overflow-hidden">
-      
       {/* Main Layout Container */}
       <div className="w-full h-full rounded-none md:rounded-[2rem] overflow-hidden bg-white dark:bg-brand-sec-dark flex flex-col relative z-10 border border-brand-border-light dark:border-white/5 shadow-2xl">
-        
         {/* Workspace panel content area */}
         <div className="flex-1 flex flex-row min-h-0 relative">
-          
           {isMobile ? (
             /* Mobile View (<768px): Animated Slide Transitions */
             <div className="flex-1 relative overflow-hidden w-full h-full">
@@ -393,14 +423,18 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
             <>
               {/* Left Navigation Dock - always visible on desktop/tablet */}
               <div className="h-full flex-shrink-0">
-                <LeftNavDock theme={theme} toggleTheme={toggleTheme} onOpenSettings={() => navigate("/settings")} />
+                <LeftNavDock
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  onOpenSettings={() => navigate("/settings")}
+                />
               </div>
-              
+
               {/* Sidebar - resizable on desktop (>=768px) */}
               {!isSettingsPath && (
                 <>
-                  <div 
-                    style={{ width: `${sidebarWidth}px` }} 
+                  <div
+                    style={{ width: `${sidebarWidth}px` }}
                     className="h-full flex-shrink-0 overflow-hidden relative"
                   >
                     <AnimatePresence mode="wait" initial={false}>
@@ -421,8 +455,8 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
                   <div
                     onMouseDown={startResizing}
                     className={`w-[4px] hover:w-[6px] h-full cursor-col-resize transition-all select-none relative z-20 flex-shrink-0 ${
-                      isResizing 
-                        ? "bg-brand-teal" 
+                      isResizing
+                        ? "bg-brand-teal"
                         : "bg-gray-100 hover:bg-brand-teal/50 dark:bg-white/5 dark:hover:bg-brand-teal/50"
                     }`}
                   />
@@ -488,50 +522,60 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
               </AnimatePresence>
             </>
           )}
-
         </div>
 
         {/* Pinterest-style Floating Glassmorphism Mobile Navigation */}
         {isMobileNavVisible && (
-          <div className="md:hidden flex-shrink-0 flex justify-center pb-4 pt-2 px-4 bg-transparent">
+          <div className="md:hidden flex-shrink-0 flex justify-center pb-[calc(16px+env(safe-area-inset-bottom,0px))] pt-2 px-4 bg-transparent select-none z-30">
             <motion.div
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ type: "spring", damping: 20, stiffness: 200 }}
-              className="flex items-center gap-1 px-2 py-2 rounded-[22px] bg-white/80 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/40"
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="w-full max-w-[420px] flex items-center justify-between p-2 px-3 rounded-[30px] bg-white/70 dark:bg-zinc-900/80 backdrop-blur-xl border border-gray-150/45 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.35)]"
             >
               {mobileNavItems.map((item, idx) => {
-                const isActive = item.path === "/chat"
-                  ? (currentPath.startsWith("/chat") || currentPath.startsWith("/archived"))
-                  : (item.path ? currentPath.startsWith(item.path) : false);
+                const isActive =
+                  item.path === "/chat"
+                    ? currentPath.startsWith("/chat")
+                    : item.path
+                      ? currentPath.startsWith(item.path)
+                      : false;
                 return (
                   <motion.button
                     key={idx}
                     onClick={() => navigate(item.path)}
-                    whileTap={{ scale: 0.88 }}
-                    className="relative flex flex-col items-center justify-center cursor-pointer select-none px-3 py-1.5 rounded-[18px] transition-colors"
+                    whileTap={{ scale: 0.95 }}
+                    className="relative flex flex-col items-center justify-center cursor-pointer select-none flex-1 min-w-[72px] max-w-[90px]"
+                    style={{ height: "60px" }}
                   >
-                    {/* Active pill background */}
+                    {/* Active elevated circular background container */}
                     {isActive && (
                       <motion.div
-                        layoutId="nav-active-pill"
-                        className="absolute inset-0 rounded-[18px] bg-brand-teal/15 dark:bg-brand-teal/20"
-                        transition={{ type: "spring", damping: 22, stiffness: 250 }}
+                        layoutId="nav-active-circle"
+                        className="absolute top-1.5 w-11 h-11 rounded-full bg-white dark:bg-zinc-800 shadow-[0_4px_16px_rgba(13,148,136,0.18)] dark:shadow-[0_4px_16px_rgba(13,148,136,0.35)] border border-gray-100 dark:border-white/5 z-0"
+                        transition={{
+                          type: "spring",
+                          damping: 24,
+                          stiffness: 280,
+                        }}
                       />
                     )}
 
                     {/* Icon */}
                     <motion.div
                       animate={{
-                        scale: isActive ? 1.12 : 1,
-                        color: isActive ? "var(--brand-teal, #0d9488)" : undefined,
+                        y: isActive ? -4 : 0,
+                        scale: isActive ? 1.15 : 1,
+                        color: isActive
+                          ? "var(--brand-teal, #0d9488)"
+                          : "rgb(156 163 175)",
                       }}
-                      transition={{ type: "spring", damping: 18, stiffness: 220 }}
-                      className={`relative z-10 transition-colors ${
-                        isActive
-                          ? "text-brand-teal"
-                          : "text-gray-400 dark:text-zinc-500"
-                      }`}
+                      transition={{
+                        type: "spring",
+                        damping: 20,
+                        stiffness: 220,
+                      }}
+                      className="relative z-10 flex items-center justify-center"
                     >
                       {item.icon}
                     </motion.div>
@@ -541,11 +585,11 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
                       {isActive && (
                         <motion.span
                           key="label"
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.18 }}
-                          className="relative z-10 text-[9px] font-bold text-brand-teal mt-0.5 uppercase tracking-wider leading-none"
+                          initial={{ opacity: 0, y: 4, scale: 0.8 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.8 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute bottom-1 z-10 text-[9.5px] font-extrabold text-brand-teal dark:text-teal-400 uppercase tracking-widest leading-none"
                         >
                           {item.label}
                         </motion.span>
@@ -572,5 +616,3 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     </div>
   );
 }
-
-
