@@ -374,7 +374,7 @@ export function ContactsSidebar({ onlineUsers }) {
                     <Avatar name={usr.username} size="sm" isOnline={isOnline} />
                     <div className="text-left font-sans min-w-0">
                       <p className={`text-[11px] font-bold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{usr.name || usr.username}</p>
-                      <p className={`text-[9px] truncate ${isActive ? "text-white/85" : "text-gray-400"} mt-0.5`}>{usr.bio || "Available"}</p>
+                      <p className={`text-[9px] truncate ${isActive ? "text-white/85" : "text-gray-400"} mt-0.5`}>ID: {usr.uniqueId || "••••••••"} • {usr.bio || "Available"}</p>
                     </div>
                   </div>
                 </div>
@@ -387,13 +387,38 @@ export function ContactsSidebar({ onlineUsers }) {
   );
 }
 
-export function ContactsMainArea({ onlineUsers = [] }) {
+export function ContactsMainArea({ onlineUsers = [], onInitiateCall }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const selectedUser = searchParams.get("username");
+  const [profileUser, setProfileUser] = useState(null);
+
+  // Fetch full details of selected contact dynamically
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!selectedUser) return;
+      try {
+        const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+        const res = await fetch(`${backendURL}/api/users/search?query=${encodeURIComponent(selectedUser)}`, {
+          headers: {
+            "Authorization": `Bearer ${currentUser?.token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Find exact username match
+          const exact = data.find((u) => u.username === selectedUser);
+          setProfileUser(exact || null);
+        }
+      } catch (err) {
+        console.error("Failed to load user profile", err);
+      }
+    };
+    fetchProfile();
+  }, [selectedUser, currentUser?.token]);
 
   if (!selectedUser) {
     return (
@@ -422,7 +447,15 @@ export function ContactsMainArea({ onlineUsers = [] }) {
     navigate("/chat");
   };
 
-  const isUserOnline = onlineUsers.includes(selectedUser) || selectedUser === "Ashish" || selectedUser === "Gauri";
+  const handleStartCall = (type) => {
+    if (profileUser?.uniqueId) {
+      onInitiateCall(profileUser.uniqueId, type);
+    } else {
+      alert("This user does not have a valid Call ID.");
+    }
+  };
+
+  const isUserOnline = onlineUsers.includes(selectedUser) || selectedUser === "Ashish" || selectedUser === "Gauri" || profileUser?.isOnline;
 
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
@@ -437,7 +470,7 @@ export function ContactsMainArea({ onlineUsers = [] }) {
         <div className="max-w-sm w-full bg-white dark:bg-brand-card-dark p-8 rounded-3xl border border-brand-border-light dark:border-white/5 shadow-md text-center space-y-6">
           <div className="flex flex-col items-center">
             <Avatar name={selectedUser} size="xxl" isOnline={isUserOnline} showStatus={true} />
-            <h3 className="text-sm font-bold text-gray-800 dark:text-white mt-4">{selectedUser}</h3>
+            <h3 className="text-sm font-bold text-gray-800 dark:text-white mt-4">{profileUser?.name || selectedUser}</h3>
             <span className="text-[9px] bg-brand-teal/15 text-brand-teal font-extrabold px-3 py-0.5 rounded-full mt-2 uppercase tracking-wider">
               {selectedUser === "Ashish" ? "Admin" : selectedUser === "Gauri" ? "Moderator" : "Member"}
             </span>
@@ -451,7 +484,13 @@ export function ContactsMainArea({ onlineUsers = [] }) {
             <div className="flex justify-between pl-2 pr-2">
               <span className="text-gray-400 font-medium">Bio Status</span>
               <span className="font-semibold text-gray-800 dark:text-gray-200 italic max-w-[160px] truncate">
-                {selectedUser === "Ashish" ? "Senior MERN stack lead" : selectedUser === "Gauri" ? "Visual UI designer" : "SocketChat contributor"}
+                {profileUser?.bio || "Hey there! I am using SocketChat."}
+              </span>
+            </div>
+            <div className="flex justify-between pl-2 pr-2">
+              <span className="text-gray-400 font-medium">Call ID</span>
+              <span className="font-mono font-bold text-brand-teal select-all cursor-pointer" title="Select and copy ID">
+                {profileUser?.uniqueId || "••••••••"}
               </span>
             </div>
             <div className="flex justify-between pl-2 pr-2">
@@ -465,17 +504,24 @@ export function ContactsMainArea({ onlineUsers = [] }) {
           <div className="flex justify-center gap-3 pt-2">
             <button 
               onClick={startPrivateChat}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 rounded-xl transition shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 rounded-xl transition shadow-sm cursor-pointer"
             >
               <FiMessageSquare size={13} />
-              Send Message
+              Message
             </button>
             <button 
-              onClick={() => alert(`Voice calling simulation for @${selectedUser}...`)}
-              className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition cursor-pointer"
+              onClick={() => handleStartCall("audio")}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition cursor-pointer"
             >
               <FiPhone size={13} />
               Voice Call
+            </button>
+            <button 
+              onClick={() => handleStartCall("video")}
+              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-white bg-purple-650 hover:bg-purple-700 rounded-xl transition cursor-pointer shadow-sm"
+            >
+              <FiVideo size={13} />
+              Video Call
             </button>
           </div>
         </div>

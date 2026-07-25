@@ -269,7 +269,7 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
                   {user.name || user.username}
                 </p>
                 <p className="text-[9px] text-gray-400 dark:text-zinc-500 truncate">
-                  @{user.username}
+                  @{user.username} {user.uniqueId && `• Call ID: ${user.uniqueId}`}
                   {isOnline ? (
                     <span className="ml-1.5 inline-flex items-center gap-0.5 text-emerald-500">
                       <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block" />

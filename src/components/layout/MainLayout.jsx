@@ -307,7 +307,12 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     mainElement = <ChannelsMainArea />;
   } else if (currentPath.startsWith("/contacts")) {
     sidebarElement = <ContactsSidebar onlineUsers={onlineUsers} />;
-    mainElement = <ContactsMainArea onlineUsers={onlineUsers} />;
+    mainElement = (
+      <ContactsMainArea
+        onlineUsers={onlineUsers}
+        onInitiateCall={callController.initiateCall}
+      />
+    );
   } else if (currentPath.startsWith("/analytics")) {
     sidebarElement = <AnalyticsSidebar />;
     mainElement = <AnalyticsMainArea />;
