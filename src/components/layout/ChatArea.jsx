@@ -298,7 +298,10 @@ export default function ChatArea({
 
   // Mark messages as read when new ones arrive
   useEffect(() => {
-    if (activeConversation && chatDetails?.unreadCount > 0) {
+    const lastMsg = messages[messages.length - 1];
+    const hasUnread = chatDetails?.unreadCount > 0 || (lastMsg && lastMsg.sender === activeConversation && !lastMsg.read);
+
+    if (activeConversation && hasUnread) {
       dispatch(
         markAsRead({
           participant: activeConversation,
@@ -307,8 +310,8 @@ export default function ChatArea({
         }),
       );
       socket.emit("message_read", {
-        sender: currentUser.username,
-        receiver: activeConversation,
+        sender: activeConversation, // The person who sent the messages
+        receiver: currentUser.username, // Current user who is reading
       });
     }
   }, [

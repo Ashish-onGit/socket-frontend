@@ -19,7 +19,7 @@ export default function Dropdown({ trigger, items, align = "right" }) {
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">{trigger}</div>
+      <div onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }} className="cursor-pointer">{trigger}</div>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -27,7 +27,8 @@ export default function Dropdown({ trigger, items, align = "right" }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -5 }}
             transition={{ duration: 0.15 }}
-            className={`absolute ${alignClasses} mt-2 w-48 rounded-xl shadow-lg ring-1 ring-black/5 glass-panel premium-card z-50 overflow-hidden py-1`}
+            onClick={(e) => e.stopPropagation()}
+            className={`absolute ${alignClasses} mt-2 w-48 rounded-xl shadow-lg ring-1 ring-black/5 bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/10 premium-card z-50 overflow-hidden py-1`}
           >
             {items.map((item, idx) => {
               if (item.divider) {
@@ -37,6 +38,7 @@ export default function Dropdown({ trigger, items, align = "right" }) {
                 <button
                   key={idx}
                   onClick={(e) => {
+                    e.stopPropagation();
                     item.onClick && item.onClick(e);
                     setIsOpen(false);
                   }}

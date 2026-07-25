@@ -8,6 +8,8 @@ import Register from "./components/Register";
 import MainLayout from "./components/layout/MainLayout";
 import { useToast } from "./components/common/ToastContext";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { TermsOfService, PrivacyPolicy } from "./components/common/TermsAndPrivacy";
+import { NotFoundPage, OfflineScreen } from "./components/common/ErrorPages";
 import "./index.css";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
@@ -180,6 +182,7 @@ function App() {
 
   return (
     <div className="w-full h-full bg-brand-bg-light dark:bg-brand-bg-dark transition-colors duration-200">
+      <OfflineScreen />
       <Routes>
         <Route 
           path="/login" 
@@ -213,6 +216,13 @@ function App() {
           } 
         />
 
+        {/* Public Legal Pages */}
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+
+        {/* Root Redirect */}
+        <Route path="/" element={<Navigate to={user ? "/chat" : "/login"} replace />} />
+
         {["/chat", "/archived", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
           <Route 
             key={path}
@@ -233,7 +243,7 @@ function App() {
         ))}
 
         {/* Fallback routes */}
-        <Route path="*" element={<Navigate to={user ? "/chat" : "/login"} replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </div>
   );

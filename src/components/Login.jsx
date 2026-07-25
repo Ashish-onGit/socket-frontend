@@ -8,6 +8,8 @@ import { FiUser, FiLock } from "react-icons/fi";
 import { FaGoogle, FaGithub, FaMicrosoft } from "react-icons/fa";
 import { useToast } from "./common/ToastContext";
 import ThemeSwitcher from "./common/ThemeSwitcher";
+import Tooltip from "./common/Tooltip";
+import { Link } from "react-router-dom";
 
 export default function Login({
   onLogin,
@@ -188,27 +190,33 @@ export default function Login({
 
           {/* Social Badges */}
           <div className="flex justify-center gap-3">
-            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
-              <FaGoogle size={14} />
-            </button>
-            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
-              <FaMicrosoft size={14} />
-            </button>
-            <button className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer text-gray-600 dark:text-gray-300">
-              <FaGithub size={15} />
-            </button>
+            <Tooltip text="Google sign in is coming soon">
+              <button disabled className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center opacity-50 cursor-not-allowed pointer-events-none text-gray-600 dark:text-gray-300">
+                <FaGoogle size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip text="Microsoft sign in is coming soon">
+              <button disabled className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center opacity-50 cursor-not-allowed pointer-events-none text-gray-600 dark:text-gray-300">
+                <FaMicrosoft size={14} />
+              </button>
+            </Tooltip>
+            <Tooltip text="GitHub sign in is coming soon">
+              <button disabled className="w-10 h-10 rounded-full border border-gray-200 dark:border-white/10 flex items-center justify-center opacity-50 cursor-not-allowed pointer-events-none text-gray-600 dark:text-gray-300">
+                <FaGithub size={15} />
+              </button>
+            </Tooltip>
           </div>
 
           {/* Terms Footer */}
           <p className="text-[10px] text-center text-gray-400 dark:text-zinc-500 mt-6 leading-relaxed font-sans">
             By signing in you agree to our{" "}
-            <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
+            <Link to="/terms" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
               Terms of Service
-            </span>{" "}
+            </Link>{" "}
             and{" "}
-            <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
+            <Link to="/privacy" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer">
               Privacy Policy
-            </span>
+            </Link>
             .
           </p>
 

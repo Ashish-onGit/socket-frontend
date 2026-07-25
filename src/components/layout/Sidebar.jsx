@@ -25,10 +25,8 @@ const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 const ConversationItem = React.memo(({
   chat, isActive, currentUser, onSelect, onPin, onArchive, onDelete, getRelativeTime,
 }) => (
-  <motion.div
-    whileHover={{ x: 3 }}
-    whileTap={{ scale: 0.98 }}
-    className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative ${
+  <div
+    className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative hover:z-30 focus-within:z-30 ${
       isActive
         ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20"
         : "hover:bg-gray-100 dark:hover:bg-white/5"
@@ -75,10 +73,10 @@ const ConversationItem = React.memo(({
     </div>
 
     {/* Dropdown Menu */}
-    <div className="opacity-75 hover:opacity-100 ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+    <div className="ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
       <Dropdown
         trigger={
-          <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
+          <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors opacity-75 hover:opacity-100 ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
             <FiChevronDown size={14} />
           </button>
         }
@@ -103,7 +101,7 @@ const ConversationItem = React.memo(({
         ]}
       />
     </div>
-  </motion.div>
+  </div>
 ), (prev, next) => (
   prev.isActive === next.isActive &&
   prev.chat.username === next.chat.username &&

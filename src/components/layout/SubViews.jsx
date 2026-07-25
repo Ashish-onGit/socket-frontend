@@ -13,6 +13,8 @@ import Avatar from "../common/Avatar";
 import ThemeSwitcher from "../common/ThemeSwitcher";
 import { useToast } from "../common/ToastContext";
 import { setActiveConversation, createConversation } from "../../features/chat/chatSlice";
+import DialPad from "../calling/DialPad";
+import CallHistoryList from "../calling/CallHistoryList";
 
 // ==========================================
 // UNIFIED VIEW HEADER HELPER
@@ -110,61 +112,72 @@ export function FilesSidebar({ onCategorySelect }) {
 }
 
 export function FilesMainArea() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
-  const category = queryParams.get("category") || "all";
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("grid");
-
-  const headerSearch = (
-    <div className="relative">
-      <FiSearch className="absolute left-3 top-2.5 text-gray-400" size={13} />
-      <input
-        type="text"
-        placeholder="Search files..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full py-1.5 pl-8 pr-4 text-[10px] rounded-xl bg-brand-bg-light dark:bg-zinc-800 border border-transparent focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all"
-      />
-    </div>
-  );
-
-  const headerActions = (
-    <button 
-      onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-      className="p-2 rounded-xl bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition cursor-pointer"
-      title={viewMode === "grid" ? "List View" : "Grid View"}
-    >
-      {viewMode === "grid" ? <FiList size={14} /> : <FiGrid size={14} />}
-    </button>
-  );
 
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
       <UnifiedHeader 
         title="Files Cabinet" 
-        subtitle="Files attached in conversations will appear here"
-        search={headerSearch}
-        actions={headerActions}
+        subtitle="Shared documents and attachments locker"
         showMobileBack={true}
         onMobileBack={() => navigate("/files")}
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-        <div className="flex justify-between items-center mb-6 pl-1 pr-1">
-          <h3 className="text-[10px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
-            {category.charAt(0).toUpperCase() + category.slice(1)} Files
-          </h3>
-        </div>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto custom-scrollbar">
+        {/* Glassmorphic Card */}
+        <div className="w-full max-w-xl bg-white/60 dark:bg-brand-card-dark/60 backdrop-blur-xl border border-brand-border-light dark:border-white/5 rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+          {/* Decorative ambient glow */}
+          <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-brand-teal/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-cyan-500/10 blur-2xl pointer-events-none" />
 
-        {/* Empty state — no dummy data shown */}
-        <div className="h-64 flex flex-col items-center justify-center text-center text-gray-400">
-          <FiFolder size={36} className="opacity-20 mb-3" />
-          <p className="text-[11px] font-bold text-gray-400 dark:text-zinc-500">No files shared yet</p>
-          <p className="text-[10px] text-gray-300 dark:text-zinc-600 mt-1 max-w-xs">
-            Files and images attached in your conversations will appear here.
+          {/* Premium Icon Badge */}
+          <div className="relative mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-teal to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-brand-teal/20 animate-pulse-slow">
+              <FiFileText size={38} />
+            </div>
+            <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-extrabold text-[8px] uppercase tracking-widest shadow-md">
+              Coming Soon
+            </span>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white uppercase tracking-wider mb-2 font-sans">
+            Files
+          </h2>
+
+          {/* Subtitle */}
+          <p className="text-xs text-brand-teal dark:text-teal-400 font-bold uppercase tracking-widest mb-4">
+            This section is currently under development
           </p>
+
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500 max-w-sm mb-8 leading-relaxed font-sans">
+            A secure hub to keep track of all files, documents, and media shared across your workspaces and individual chats.
+          </p>
+
+          {/* Features Checklist Card */}
+          <div className="w-full bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-100/55 dark:border-white/5 rounded-2xl p-5 text-left space-y-4">
+            <h4 className="text-[9.5px] font-extrabold text-gray-555 dark:text-zinc-400 uppercase tracking-widest">
+              Soon you'll be able to:
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { title: "Upload Files", desc: "Upload docs directly from your device." },
+                { title: "Share Documents", desc: "Send sheets, PDFs, and media instantly." },
+                { title: "Organize Attachments", desc: "Group attachments by type or sender." },
+                { title: "Search Shared Files", desc: "Instantly locate items by keyword or filter." }
+              ].map((feat, idx) => (
+                <div key={idx} className="flex gap-2.5 items-start">
+                  <span className="w-5 h-5 rounded-full bg-brand-teal/10 text-brand-teal flex items-center justify-center flex-shrink-0 mt-0.5 text-[9px] font-bold">
+                    ✓
+                  </span>
+                  <div>
+                    <h5 className="text-[11px] font-bold text-gray-800 dark:text-gray-50">{feat.title}</h5>
+                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">{feat.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -221,94 +234,69 @@ export function ChannelsSidebar() {
 }
 
 export function ChannelsMainArea() {
-  const [messages, setMessages] = useState([]);
-  const [inputText, setInputText] = useState("");
-  const messagesEndRef = useRef(null);
-  const currentUser = useSelector((state) => state.auth.user);
-  const location = useLocation();
   const navigate = useNavigate();
-  const searchParams = new URLSearchParams(location.search);
-  const activeChannel = searchParams.get("name") || "#general";
-
-  useEffect(() => {
-    const cached = localStorage.getItem(`channel_${activeChannel}`);
-    if (cached) {
-      setMessages(JSON.parse(cached));
-    } else {
-      setMessages([]);
-    }
-  }, [activeChannel]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSend = () => {
-    if (!inputText.trim()) return;
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const updated = [...messages, { sender: currentUser.username, text: inputText.trim(), time }];
-    setMessages(updated);
-    localStorage.setItem(`channel_${activeChannel}`, JSON.stringify(updated));
-    setInputText("");
-  };
-
-  const headerActions = (
-    <span className="text-[9px] text-brand-teal bg-brand-teal/5 border border-brand-teal/20 px-3 py-1 rounded-full font-bold">
-      Public Group
-    </span>
-  );
 
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
       <UnifiedHeader 
-        title={activeChannel}
-        subtitle="Real-time updates and group discussions"
-        actions={headerActions}
+        title="Channels Hub"
+        subtitle="Dedicated communication spaces for teams"
         showMobileBack={true}
         onMobileBack={() => navigate("/channels")}
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
-        {messages.map((msg, idx) => {
-          const fromSelf = msg.sender === currentUser.username;
-          return (
-            <div key={idx} className={`flex flex-col ${fromSelf ? "items-end" : "items-start"}`}>
-              <div className="text-[9px] text-gray-400 mb-1 pl-1 pr-1 font-sans">
-                <span className="font-bold">{msg.sender}</span>
-                <span className="mx-1">&bull;</span>
-                <span>{msg.time}</span>
-              </div>
-              <div className={`p-3 rounded-2xl text-[11px] leading-relaxed max-w-[65%] font-sans break-words ${
-                fromSelf 
-                  ? "bg-[#DDE9F9] dark:bg-zinc-800 text-gray-800 dark:text-gray-100 rounded-br-none" 
-                  : "bg-white dark:bg-zinc-900/60 text-gray-800 dark:text-gray-100 border border-brand-border-light dark:border-white/5 rounded-bl-none"
-              }`}>
-                {msg.text}
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef}></div>
-      </div>
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto custom-scrollbar">
+        {/* Modern Placeholder Container */}
+        <div className="w-full max-w-2xl bg-white/60 dark:bg-brand-card-dark/60 backdrop-blur-xl border border-brand-border-light dark:border-white/5 rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+          {/* Ambient Glows */}
+          <div className="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-purple-500/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-36 h-36 rounded-full bg-brand-teal/10 blur-2xl pointer-events-none" />
 
-      <div className="p-4 border-t border-brand-border-light dark:border-white/5 bg-white/70 dark:bg-brand-panel-dark/80 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-2xl px-4 py-2 flex items-center gap-2">
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={`Post a message to ${activeChannel}...`}
-              className="flex-1 bg-transparent border-none focus:outline-none text-[11px] text-gray-900 dark:text-white font-sans"
-            />
+          {/* Icon Badge */}
+          <div className="relative mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 animate-pulse-slow">
+              <FiUsers size={38} />
+            </div>
+            <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-brand-teal text-white font-extrabold text-[8px] uppercase tracking-widest shadow-md">
+              Coming Soon
+            </span>
           </div>
-          <button
-            onClick={handleSend}
-            className="p-2.5 rounded-full bg-brand-teal hover:bg-brand-teal/95 text-white shadow-md shadow-brand-teal/20 transition flex items-center justify-center cursor-pointer"
-          >
-            <FiSend size={14} />
-          </button>
+
+          {/* Title */}
+          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white uppercase tracking-wider mb-2">
+            Channels
+          </h2>
+
+          {/* Subtitle */}
+          <p className="text-xs text-indigo-500 dark:text-indigo-400 font-extrabold uppercase tracking-widest mb-4">
+            Under Development
+          </p>
+
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500 max-w-md mb-8 leading-relaxed">
+            Channels will allow communities and teams to communicate in dedicated spaces. Organize discussions by projects, topics, departments, or interests.
+          </p>
+
+          {/* Features Grid */}
+          <div className="w-full bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-100/55 dark:border-white/5 rounded-2xl p-5 text-left">
+            <h4 className="text-[9.5px] font-extrabold text-gray-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
+              Features Coming Soon
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {[
+                { title: "Public Channels", desc: "Open spaces for anyone in the company to join and contribute." },
+                { title: "Private Channels", desc: "Invite-only spaces for secure and sensitive conversations." },
+                { title: "Threaded Conversations", desc: "Keep discussions organized by replying directly to messages." },
+                { title: "Channel Permissions", desc: "Granular roles to manage who can view, post, or edit messages." },
+                { title: "Mentions & Alerts", desc: "Notify team members instantly with @mentions and ping updates." },
+                { title: "File Sharing & Pins", desc: "Share project documents and pin important resources." }
+              ].map((feat, idx) => (
+                <div key={idx} className="p-3 bg-white dark:bg-zinc-900/40 rounded-xl border border-gray-100 dark:border-white/5 hover:scale-[1.02] transition-transform">
+                  <h5 className="text-[10px] font-bold text-gray-800 dark:text-gray-150 uppercase tracking-wide">{feat.title}</h5>
+                  <p className="text-[9px] text-gray-450 dark:text-zinc-500 mt-1 leading-normal">{feat.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -541,16 +529,38 @@ export function AnalyticsMainArea() {
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
       <UnifiedHeader 
-        title="Analytics" 
+        title="Analytics Dashboard" 
         subtitle="SaaS Dashboard and Metrics Overview"
         showMobileBack={false}
+        actions={
+          <span className="text-[9px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            DEMO DATA
+          </span>
+        }
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-8 space-y-6">
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6">
+        {/* Warning Alert Banner */}
+        <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3 text-left">
+          <FiInfo className="text-amber-600 dark:text-amber-450 mt-0.5 flex-shrink-0" size={16} />
+          <div>
+            <h5 className="text-[11px] font-extrabold text-amber-800 dark:text-amber-400 uppercase tracking-wide">
+              Demo Analytics
+            </h5>
+            <p className="text-[9.5px] text-amber-700 dark:text-amber-500/90 mt-1 leading-normal">
+              The metrics, statistics, and graphs shown on this dashboard reflect simulation indicator data. Live system telemetry and server logs analytics will be integrated in a future update.
+            </p>
+          </div>
+        </div>
+
         {/* Statistics Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((st, idx) => (
-            <div key={idx} className="p-5 bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-2xl shadow-sm text-left flex flex-col justify-between">
+            <div key={idx} className="p-5 bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-2xl shadow-sm text-left flex flex-col justify-between relative overflow-hidden">
+              <span className="absolute top-2 right-2 text-[8px] font-bold text-amber-500/60 bg-amber-500/5 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                Demo
+              </span>
               <div className="flex justify-between items-start">
                 <span className="text-[9px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">{st.title}</span>
                 <div className={`p-2 rounded-xl flex items-center justify-center ${st.color}`}>
@@ -568,10 +578,13 @@ export function AnalyticsMainArea() {
         </div>
 
         {/* Transmission volume history */}
-        <div className="bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-3xl p-6 flex flex-col text-left shadow-sm">
+        <div className="bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/5 rounded-3xl p-6 flex flex-col text-left shadow-sm relative">
+          <span className="absolute top-6 right-6 text-[8px] font-bold text-amber-500/60 bg-amber-500/5 px-2 py-0.5 rounded-full uppercase tracking-wider border border-amber-500/10">
+            Preview Dataset
+          </span>
           <div className="mb-6">
             <h4 className="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Message Volume History</h4>
-            <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">Transmission traffic statistics over the past week</p>
+            <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">Transmission traffic statistics over the past week (Sample Feed)</p>
           </div>
           
           <div className="h-48 pl-2 pr-2 relative mt-4 flex items-end justify-between">
@@ -611,14 +624,8 @@ export function AnalyticsMainArea() {
 // ==========================================
 // 5. CALLS VIEW COMPONENTS
 // ==========================================
-export function CallsSidebar() {
+export function CallsSidebar({ currentUser, onInitiateCall }) {
   const navigate = useNavigate();
-  const logs = [
-    { name: "Gauri", type: "incoming", duration: "12m 45s", time: "Today, 2:15 PM" },
-    { name: "Ashish", type: "outgoing", duration: "4m 12s", time: "Yesterday, 6:30 PM" },
-    { name: "Gauri", type: "missed", duration: "0s", time: "May 30, 10:20 AM" },
-    { name: "Gauri", type: "incoming", duration: "32m 10s", time: "May 28, 4:15 PM" }
-  ];
 
   return (
     <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
@@ -632,37 +639,20 @@ export function CallsSidebar() {
         </button>
       </div>
 
-      <div className="p-4 flex-1 overflow-y-auto custom-scrollbar space-y-1">
-        <span className="text-[9px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest block mb-3">Call Logs</span>
-        {logs.map((log, idx) => (
-          <div key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex-shrink-0">
-                {log.type === "incoming" && <FiArrowDownLeft className="text-emerald-500" size={15} />}
-                {log.type === "outgoing" && <FiArrowUpRight className="text-brand-teal" size={15} />}
-                {log.type === "missed" && <FiPhoneMissed className="text-rose-500" size={15} />}
-              </div>
-              <div className="text-left font-sans min-w-0">
-                <p className="text-[11px] font-bold text-gray-800 dark:text-gray-100 truncate">{log.name}</p>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5 truncate">{log.time} ({log.duration})</p>
-              </div>
-            </div>
-          </div>
-        ))}
+      <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
+        <CallHistoryList currentUser={currentUser} onInitiateCall={onInitiateCall} />
       </div>
     </div>
   );
 }
 
-export function CallsMainArea() {
-  const [dialNum, setDialNum] = useState("");
+export function CallsMainArea({ onInitiateCall, callError, isDialing }) {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const isDialing = searchParams.get("dial");
-  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
+  const showDial = searchParams.get("dial");
 
-  if (!isDialing) {
+  if (!showDial) {
     return (
       <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
         <UnifiedHeader 
@@ -674,9 +664,9 @@ export function CallsMainArea() {
           <div className="bg-brand-teal/5 dark:bg-brand-teal/10 p-6 rounded-full mb-4 animate-pulse">
             <FiVideo className="text-brand-teal" size={36} />
           </div>
-          <h4 className="text-xs font-extrabold text-gray-800 dark:text-gray-200 uppercase tracking-widest">No recent calls</h4>
+          <h4 className="text-xs font-extrabold text-gray-800 dark:text-gray-200 uppercase tracking-widest">No active call</h4>
           <p className="text-[10px] text-gray-400 dark:text-gray-500 max-w-xs mt-2">
-            Click Dial on the sidebar to open the dialing pad or start voice call simulations.
+            Click Dial on the sidebar to open the dialing pad or use your Call ID to invite other members.
           </p>
         </div>
       </div>
@@ -687,53 +677,18 @@ export function CallsMainArea() {
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
       <UnifiedHeader 
         title="Dialpad"
-        subtitle="Initiate simulated calls"
+        subtitle="Initiate WebRTC Calls using 8-digit Call ID"
         showMobileBack={true}
         onMobileBack={() => navigate("/calls")}
       />
 
       <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto custom-scrollbar">
-        <div className="max-w-xs w-full bg-white dark:bg-brand-card-dark p-6 rounded-[2rem] border border-brand-border-light dark:border-white/5 shadow-md space-y-6">
-          <div className="text-center pt-2">
-            <input
-              type="text"
-              readOnly
-              value={dialNum || "Enter number..."}
-              className={`w-full bg-transparent text-center border-none focus:outline-none text-lg font-extrabold tracking-widest ${
-                dialNum ? "text-gray-800 dark:text-white" : "text-gray-400"
-              }`}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3.5 justify-items-center">
-            {keys.map((k) => (
-              <button
-                key={k}
-                onClick={() => setDialNum((n) => n + k)}
-                className="w-12 h-12 rounded-full border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/5 font-extrabold text-[12px] flex items-center justify-center transition cursor-pointer text-gray-700 dark:text-gray-200"
-              >
-                {k}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center gap-4 pt-2">
-            {dialNum && (
-              <button
-                onClick={() => setDialNum("")}
-                className="w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center text-[10px] font-bold cursor-pointer text-gray-600 dark:text-gray-300"
-              >
-                Clear
-              </button>
-            )}
-
-            <button
-              onClick={() => alert(`Dialing ${dialNum || "Gauri"}...`)}
-              className="w-12 h-12 rounded-full bg-brand-teal hover:bg-brand-teal/90 text-white flex items-center justify-center shadow-md shadow-brand-teal/20 transition cursor-pointer"
-            >
-              <FiPhoneCall size={16} />
-            </button>
-          </div>
+        <div className="max-w-md w-full bg-white dark:bg-brand-card-dark p-6 rounded-[2rem] border border-brand-border-light dark:border-white/5 shadow-md">
+          <DialPad 
+            onInitiateCall={onInitiateCall} 
+            callError={callError} 
+            isDialing={isDialing} 
+          />
         </div>
       </div>
     </div>
@@ -747,7 +702,172 @@ export function SettingsSidebar() {
   return null;
 }
 
+export function CosmosBackground() {
+  const canvasRef = React.useRef(null);
 
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationFrameId;
+    let width = (canvas.width = canvas.offsetWidth);
+    let height = (canvas.height = canvas.offsetHeight);
+
+    const particles = [];
+    const maxParticles = 65;
+    const mouse = { x: null, y: null, active: false };
+
+    class Particle {
+      constructor(x, y, isMouseTrail = false) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 2 + 0.5;
+        this.isMouseTrail = isMouseTrail;
+        
+        // Cosmos palette: teal, purple, cyan, pink
+        const colors = [
+          "rgba(13, 148, 136, ",
+          "rgba(168, 85, 247, ",
+          "rgba(6, 182, 212, ",
+          "rgba(236, 72, 153, "
+        ];
+        this.colorPrefix = colors[Math.floor(Math.random() * colors.length)];
+        
+        if (isMouseTrail) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 1.5 + 0.5;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.alpha = 1.0;
+          this.decay = Math.random() * 0.015 + 0.01;
+        } else {
+          this.vx = (Math.random() - 0.5) * 0.2;
+          this.vy = (Math.random() - 0.5) * 0.2;
+          this.alpha = Math.random() * 0.5 + 0.1;
+          this.decay = 0;
+        }
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.isMouseTrail) {
+          this.alpha -= this.decay;
+        } else {
+          this.alpha += (Math.random() - 0.5) * 0.02;
+          if (this.alpha < 0.1) this.alpha = 0.1;
+          if (this.alpha > 0.6) this.alpha = 0.6;
+
+          if (this.x < 0) this.x = width;
+          if (this.x > width) this.x = 0;
+          if (this.y < 0) this.y = height;
+          if (this.y > height) this.y = 0;
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `${this.colorPrefix}${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < maxParticles; i++) {
+      particles.push(new Particle(Math.random() * width, Math.random() * height, false));
+    }
+
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+      mouse.active = true;
+
+      if (particles.length < maxParticles + 45) {
+        for (let i = 0; i < 2; i++) {
+          particles.push(new Particle(mouse.x, mouse.y, true));
+        }
+      }
+    };
+
+    const handleMouseLeave = () => {
+      mouse.active = false;
+    };
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    const parent = canvas.parentElement;
+    if (parent) {
+      parent.addEventListener("mousemove", handleMouseMove);
+      parent.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    const loop = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Connect close ambient stars
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const p1 = particles[i];
+          const p2 = particles[j];
+          if (!p1.isMouseTrail && !p2.isMouseTrail) {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 80) {
+              const lineAlpha = (1 - dist / 80) * 0.08;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(13, 148, 136, ${lineAlpha})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw();
+
+        if (p.isMouseTrail && p.alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    loop();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", handleResize);
+      if (parent) {
+        parent.removeEventListener("mousemove", handleMouseMove);
+        parent.removeEventListener("mouseleave", handleMouseLeave);
+      }
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+    />
+  );
+}
 
 export function SettingsMainArea({
   currentUser,
@@ -759,6 +879,7 @@ export function SettingsMainArea({
   onLogout
 }) {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [saved, setSaved] = React.useState(false);
   const [editing, setEditing] = React.useState(false);
 
@@ -771,181 +892,152 @@ export function SettingsMainArea({
     setTimeout(() => setSaved(false), 2500);
   };
 
-  return (
-    <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark font-sans overflow-hidden">
+  const getJoinedDate = () => {
+    if (currentUser.createdAt) {
+      return new Date(currentUser.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+      });
+    }
+    return "July 2026";
+  };  return (
+    <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark font-sans overflow-hidden relative">
       <UnifiedHeader 
         title="Settings" 
-        subtitle="Manage your profile and appearance preferences"
+        subtitle="Manage your profile and workspace preferences"
         showMobileBack={true}
         onMobileBack={() => navigate("/chat")}
       />
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {/* Banner Hero */}
-        <div className="relative w-full">
-          <div className="h-24 sm:h-28 bg-gradient-to-br from-brand-teal via-teal-500 to-cyan-600 dark:from-teal-700 dark:via-teal-600 dark:to-cyan-800 relative overflow-hidden">
-            <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute bottom-0 left-1/3 w-24 h-24 rounded-full bg-white/5 blur-xl" />
-          </div>
-          <div className="absolute -bottom-8 left-6">
-            <div className="ring-4 ring-brand-bg-light dark:ring-brand-bg-dark rounded-full shadow-md">
-              <Avatar name={currentUser.username} size="xl" showStatus={false} />
-            </div>
-          </div>
+      <div className="flex-1 overflow-y-auto custom-scrollbar flex items-center justify-center p-6 relative tech-grid-overlay">
+        
+        {/* Interactive Cosmos Star Trail Canvas */}
+        <CosmosBackground />
+
+        {/* Animated background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-10 left-10 w-64 h-64 bg-teal-400/20 dark:bg-teal-500/10 rounded-full filter blur-3xl animate-blob" />
+          <div className="absolute top-20 right-10 w-72 h-72 bg-purple-400/20 dark:bg-purple-500/10 rounded-full filter blur-3xl animate-blob [animation-delay:3s]" />
+          <div className="absolute -bottom-10 left-20 w-80 h-80 bg-pink-400/20 dark:bg-pink-500/10 rounded-full filter blur-3xl animate-blob [animation-delay:6s]" />
         </div>
 
-        {/* Settings Body */}
-        <div className="px-6 pt-12 pb-10 max-w-2xl mx-auto space-y-6 text-left">
-          {/* User Profile Ident */}
-          <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-gray-900 dark:text-white">{currentUser.username}</h2>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-brand-teal/10 text-brand-teal border border-brand-teal/20">
-                Standard Account
-              </span>
-              <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                Online
-              </span>
+        <div className="max-w-md w-full text-center space-y-8 py-8 relative z-10 bg-white/70 dark:bg-brand-card-dark/65 backdrop-blur-xl border border-brand-border-light dark:border-white/5 rounded-3xl p-8 shadow-xl overflow-hidden">
+          
+          {/* Futuristic Corner Crosshairs */}
+          <div className="absolute top-2 left-3 text-[10px] font-mono text-brand-teal/40 dark:text-teal-400/25 font-bold pointer-events-none select-none">+</div>
+          <div className="absolute top-2 right-3 text-[10px] font-mono text-brand-teal/40 dark:text-teal-400/25 font-bold pointer-events-none select-none">+</div>
+          <div className="absolute bottom-2 left-3 text-[10px] font-mono text-brand-teal/40 dark:text-teal-400/25 font-bold pointer-events-none select-none">+</div>
+          <div className="absolute bottom-2 right-3 text-[10px] font-mono text-brand-teal/40 dark:text-teal-400/25 font-bold pointer-events-none select-none">+</div>
+          
+          {/* 1. Pinterest Style Avatar & Identity Block */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative group">
+              <div className="relative ring-4 ring-white dark:ring-brand-bg-dark rounded-full shadow-md overflow-hidden">
+                <Avatar name={currentUser.username} size="xxl" showStatus={false} />
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                {currentUser.name || currentUser.username}
+              </h1>
+              <p className="text-[11px] text-gray-400 dark:text-zinc-555 font-medium font-sans">
+                {currentUser.email || `${currentUser.username}@socketchat.com`}
+              </p>
             </div>
           </div>
 
-          {/* Profile Card */}
-          <div className="bg-white dark:bg-brand-card-dark rounded-2xl border border-brand-border-light dark:border-white/5 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-white/5">
-              <div className="p-1.5 rounded-lg bg-brand-teal/10 text-brand-teal"><FiEdit2 size={13} /></div>
-              <div>
-                <h3 className="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Profile</h3>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500">Customize your public bio status message</p>
-              </div>
-            </div>
-            <div className="p-5 space-y-3.5">
-              <div className="flex items-center justify-between">
-                <label className="text-[9px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">Bio / Status</label>
-                {!editing && (
-                  <button onClick={() => setEditing(true)} className="text-[10px] font-bold text-brand-teal hover:underline cursor-pointer">
-                    Edit
+          {/* 2. Status Bio Box (Minimalistic click-to-edit status) */}
+          <div className="max-w-xs mx-auto relative h-10 flex items-center justify-center">
+            {editing ? (
+              <div className="space-y-2 w-full animate-fade-in">
+                <input
+                  type="text"
+                  value={settingsBio}
+                  onChange={(e) => setSettingsBio(e.target.value)}
+                  maxLength={120}
+                  autoFocus
+                  placeholder="What's on your mind?"
+                  className="w-full text-center py-2 px-3 text-xs rounded-xl bg-gray-50 dark:bg-white/5 border border-brand-teal/30 focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+                />
+                <div className="flex items-center justify-center gap-1.5">
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="px-2.5 py-1 text-[9px] font-semibold text-gray-450 hover:text-gray-655 dark:hover:text-zinc-350 cursor-pointer"
+                  >
+                    Cancel
                   </button>
+                  <button
+                    onClick={onSave}
+                    className="px-3 py-1 text-[9px] font-bold bg-brand-teal text-white rounded-lg cursor-pointer hover:bg-brand-teal/90 transition shadow-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="group relative inline-block">
+                <p 
+                  onClick={() => setEditing(true)}
+                  className="text-xs text-gray-655 dark:text-gray-300 leading-relaxed cursor-pointer hover:text-brand-teal dark:hover:text-brand-teal transition-colors px-4 italic font-sans"
+                >
+                  "{settingsBio || "Add a status bio..."}"
+                </p>
+                {saved && (
+                  <span className="absolute left-1/2 -translate-x-1/2 -bottom-5 text-[8px] font-bold text-emerald-500 uppercase tracking-widest whitespace-nowrap animate-fade-in">
+                    Saved!
+                  </span>
                 )}
               </div>
-              {editing ? (
-                <div className="space-y-3">
-                  <textarea
-                    value={settingsBio}
-                    onChange={(e) => setSettingsBio(e.target.value)}
-                    maxLength={120}
-                    autoFocus
-                    placeholder="What's on your mind?"
-                    rows={3}
-                    className="w-full p-3 text-xs rounded-xl bg-gray-50 dark:bg-white/5 border border-brand-teal/40 focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/10 focus:outline-none text-gray-900 dark:text-white resize-none transition-all font-sans"
-                  />
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-gray-400 dark:text-zinc-600">{settingsBio.length}/120</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setEditing(false)}
-                        className="px-3 py-1.5 text-[10px] font-semibold text-gray-500 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/15 rounded-lg cursor-pointer transition"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={onSave}
-                        className="flex items-center gap-1.5 px-4 py-1.5 text-[10px] font-bold rounded-lg cursor-pointer transition bg-brand-teal hover:bg-brand-teal/90 text-white shadow-sm"
-                      >
-                        <FiSave size={11} /> Save
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start gap-2 p-3.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 min-h-[44px]">
-                  {saved ? (
-                    <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-bold">
-                      <FiCheckCircle size={13} /> Saved successfully!
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed font-sans">
-                      {settingsBio || <span className="text-gray-400 dark:text-zinc-500 italic">No bio set &mdash; edit to add one.</span>}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* Appearance Card */}
-          <div className="bg-white dark:bg-brand-card-dark rounded-2xl border border-brand-border-light dark:border-white/5 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-white/5">
-              <div className="p-1.5 rounded-lg bg-brand-teal/10 text-brand-teal"><FiMoon size={13} /></div>
-              <div>
-                <h3 className="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Appearance</h3>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500">Adjust the visual theme of your client workspace</p>
-              </div>
-            </div>
-            <div className="p-5">
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                <div>
-                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200">{theme === "dark" ? "Dark Mode" : "Light Mode"}</p>
-                  <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">
-                    {theme === "dark" ? "Easy on your eyes at night" : "Bright and crisp interface design"}
-                  </p>
-                </div>
-                <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
-              </div>
-            </div>
-          </div>
-
-          {/* Preferences Card */}
-          <div className="bg-white dark:bg-brand-card-dark rounded-2xl border border-brand-border-light dark:border-white/5 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-white/5">
-              <div className="p-1.5 rounded-lg bg-brand-teal/10 text-brand-teal"><FiBell size={13} /></div>
-              <div>
-                <h3 className="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 uppercase tracking-wider">Preferences</h3>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500">Live network connectivity and updates status</p>
-              </div>
-            </div>
-            <div className="divide-y divide-gray-100 dark:divide-white/5">
-              {[
-                { icon: <FiBell size={14} />, bg: "bg-purple-500/10 text-purple-500", label: "Message Notifications", desc: "Get browser push notifications", badge: "ON", bc: "bg-purple-500/10 text-purple-500" },
-                { icon: <FiWifi size={14} />, bg: "bg-emerald-500/10 text-emerald-500", label: "Connection Node", desc: "Connected via Socket.io channels", badge: "LIVE", bc: "bg-emerald-500/10 text-emerald-500" },
-                { icon: <FiInfo size={14} />, bg: "bg-blue-500/10 text-blue-500", label: "Workspace Version", desc: "SocketChat Premium Desktop build", badge: "v1.0", bc: "bg-gray-100 dark:bg-white/5 text-gray-400" },
-              ].map((row, i) => (
-                <div key={i} className="flex items-center gap-4 px-5 py-3.5">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${row.bg}`}>{row.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate">{row.label}</p>
-                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5 truncate">{row.desc}</p>
-                  </div>
-                  <span className={`text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${row.bc}`}>{row.badge}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Security Zone */}
-          <div className="bg-white dark:bg-brand-card-dark rounded-2xl border border-red-200 dark:border-red-500/15 shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-red-100 dark:border-red-500/10 bg-red-50/50 dark:bg-red-500/5">
-              <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500"><FiShield size={13} /></div>
-              <div>
-                <h3 className="text-[11px] font-extrabold text-red-500 uppercase tracking-wider">Account Security</h3>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500">Signout option to clear credentials</p>
-              </div>
-            </div>
-            <div className="p-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10">
-                <div>
-                  <p className="text-xs font-bold text-gray-800 dark:text-gray-200">Sign out of SocketChat Workspace</p>
-                  <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">Ends your session and clears browser data store safely.</p>
-                </div>
+          {/* 3. Sleek, Flat Settings Details */}
+          <div className="max-w-xs mx-auto border-t border-b border-gray-100 dark:border-white/5 py-6 space-y-5">
+            {/* Call ID Item */}
+            <div className="flex items-center justify-between text-xs font-sans">
+              <span className="text-gray-455 dark:text-zinc-500 font-medium">Workspace Call ID</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold text-gray-800 dark:text-zinc-200">
+                  {currentUser.uniqueId || "83749204"}
+                </span>
                 <button
-                  onClick={() => onLogout()}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-[10px] font-bold text-red-500 hover:text-white bg-white dark:bg-red-500/10 hover:bg-red-500 border border-red-200 dark:border-red-500/20 rounded-xl transition cursor-pointer whitespace-nowrap w-full sm:w-auto"
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentUser.uniqueId || "83749204");
+                    showToast("Call ID copied!", "success");
+                  }}
+                  className="text-[9px] font-bold text-brand-teal hover:underline cursor-pointer"
                 >
-                  <FiLogOut size={13} /> Log out
+                  Copy
                 </button>
               </div>
             </div>
+
+            {/* Joined Date Item */}
+            <div className="flex items-center justify-between text-xs font-sans">
+              <span className="text-gray-455 dark:text-zinc-500 font-medium">Member Since</span>
+              <span className="font-semibold text-gray-700 dark:text-zinc-300">
+                {getJoinedDate()}
+              </span>
+            </div>
+
+            {/* Interface Theme Switcher Row */}
+            <div className="flex items-center justify-between text-xs font-sans">
+              <span className="text-gray-455 dark:text-zinc-500 font-medium">Dark Theme</span>
+              <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
+            </div>
           </div>
+
+          {/* 4. Action Buttons (Sign Out / Close) */}
+          <div className="flex flex-col items-center space-y-3">
+            <button
+              onClick={() => onLogout()}
+              className="px-6 py-2.5 text-xs font-bold text-red-500 hover:text-white dark:text-red-400 dark:hover:text-white bg-transparent border border-red-200/50 hover:bg-red-500 dark:border-red-500/20 dark:hover:bg-red-550 rounded-full transition cursor-pointer"
+            >
+              Sign out
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

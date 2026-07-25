@@ -9,6 +9,7 @@ import {
   FiSettings,
   FiArchive,
   FiUser,
+  FiVideo,
 } from "react-icons/fi";
 import { updateProfile } from "../../features/auth/authSlice";
 import {
@@ -42,11 +43,14 @@ import {
   SettingsSidebar,
   SettingsMainArea,
 } from "./SubViews";
+import { useCall } from "../../hooks/useCall";
+import CallOverlay from "../calling/CallOverlay";
 
 export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const currentUser = useSelector((state) => state.auth.user);
+  const callController = useCall(socket, currentUser);
   const activeConversation = useSelector(
     (state) => state.chat.activeConversation,
   );
@@ -139,6 +143,15 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     }
   }, [currentUser]);
 
+  // Request browser notification permission
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
+
   // Desktop redirection for missing query parameters
   useEffect(() => {
     const handleDesktopRedirect = () => {
@@ -188,7 +201,19 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
           fromSelf: false,
         }),
       );
-      // showToast(`New message from ${data.sender}`, "info");
+      
+      // Trigger system notification if the app is out of focus / backgrounded
+      if (document.visibilityState !== "visible" || document.hidden) {
+        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+          const notif = new Notification(`New message from ${data.sender}`, {
+            body: data.content || "Sent you a file",
+          });
+          notif.onclick = () => {
+            window.focus();
+            notif.close();
+          };
+        }
+      }
     });
 
     // Message events listener
@@ -287,8 +312,19 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     sidebarElement = <AnalyticsSidebar />;
     mainElement = <AnalyticsMainArea />;
   } else if (currentPath.startsWith("/calls")) {
-    sidebarElement = <CallsSidebar />;
-    mainElement = <CallsMainArea />;
+    sidebarElement = (
+      <CallsSidebar
+        currentUser={currentUser}
+        onInitiateCall={callController.initiateCall}
+      />
+    );
+    mainElement = (
+      <CallsMainArea
+        onInitiateCall={callController.initiateCall}
+        callError={callController.callError}
+        isDialing={callController.isDialing}
+      />
+    );
   } else if (currentPath.startsWith("/settings")) {
     sidebarElement = <SettingsSidebar />;
     mainElement = (
@@ -345,7 +381,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     { icon: <FiMessageSquare size={18} />, label: "Chats", path: "/chat" },
     { icon: <FiArchive size={18} />, label: "Archive", path: "/archived" },
     { icon: <FiFileText size={18} />, label: "Files", path: "/files" },
-    { icon: <FiHash size={18} />, label: "Channels", path: "/channels" },
+    { icon: <FiVideo size={18} />, label: "Calls", path: "/calls" },
     { icon: <FiUser size={18} />, label: "Profile", path: "/settings" },
   ];
 
@@ -612,6 +648,19 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         confirmLabel="Logout"
         cancelLabel="Cancel"
         type="danger"
+      />
+
+      <CallOverlay
+        callState={callController.callState}
+        callType={callController.callType}
+        peerUser={callController.peerUser}
+        localStream={callController.localStream}
+        remoteStream={callController.remoteStream}
+        connectionState={callController.connectionState}
+        onAccept={callController.acceptCall}
+        onReject={callController.rejectCall}
+        onCancel={callController.cancelCall}
+        onHangUp={callController.hangUp}
       />
     </div>
   );

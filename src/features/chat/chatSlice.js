@@ -28,7 +28,7 @@ const chatSlice = createSlice({
       if (action.payload && state.conversations[action.payload]) {
         state.conversations[action.payload].unreadCount = 0;
         state.conversations[action.payload].messages.forEach((msg) => {
-          if (msg.sender !== action.payload) {
+          if (msg.sender === action.payload) {
             msg.read = true;
           }
         });

@@ -37,7 +37,8 @@ export default function ContextMenu({ x, y, isOpen, onClose, items, onReact }) {
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.12 }}
           style={{ top: adjustedY, left: adjustedX }}
-          className="fixed z-50 w-44 rounded-xl shadow-2xl glass-panel premium-card py-1.5 text-gray-900 dark:text-gray-100 overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+          className="fixed z-50 w-44 rounded-xl shadow-2xl bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/10 premium-card py-1.5 text-gray-900 dark:text-gray-100 overflow-hidden"
         >
           {/* Reaction Quick Bar */}
           {onReact && (
@@ -45,7 +46,8 @@ export default function ContextMenu({ x, y, isOpen, onClose, items, onReact }) {
               {reactionEmojis.map((emoji) => (
                 <button
                   key={emoji}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onReact(emoji);
                     onClose();
                   }}
@@ -66,6 +68,7 @@ export default function ContextMenu({ x, y, isOpen, onClose, items, onReact }) {
               <button
                 key={idx}
                 onClick={(e) => {
+                  e.stopPropagation();
                   item.onClick && item.onClick(e);
                   onClose();
                 }}
