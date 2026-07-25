@@ -949,7 +949,7 @@ export function SettingsMainArea({
   };  return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark font-sans overflow-hidden relative">
       <UnifiedHeader 
-        title="Settings" 
+        title="Profile" 
         subtitle="Manage your profile and workspace preferences"
         showMobileBack={true}
         onMobileBack={() => navigate("/chat")}

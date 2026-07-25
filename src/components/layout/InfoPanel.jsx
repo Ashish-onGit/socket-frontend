@@ -8,6 +8,7 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
   const navigate = useNavigate();
   const conversations = useSelector((state) => state.chat.conversations);
   const chatDetails = conversations[activeConversation] || null;
+  console.log(chatDetails )
   const messages = chatDetails?.messages || [];
 
   const [activeMediaTab, setActiveMediaTab] = useState("files"); // files vs links

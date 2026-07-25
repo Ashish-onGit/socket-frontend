@@ -699,35 +699,6 @@ export default function ChatArea({
               )}
             </p>
           </div>
-
-          {/* Segmented Control Pill Tabs - next to username, hidden on mobile */}
-          {chatWindowWidth >= 768 && (
-            <div className="bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-xl flex ml-2 flex-shrink-0">
-              <button
-                onClick={() => setHeaderTab("messages")}
-                className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                  headerTab === "messages"
-                    ? "bg-white dark:bg-zinc-700 text-brand-teal dark:text-white shadow-sm"
-                    : "text-gray-400 dark:text-zinc-500 hover:text-gray-700"
-                }`}
-              >
-                Messages
-              </button>
-              <button
-                onClick={() => {
-                  setHeaderTab("messages");
-                  onToggleInfoPanel();
-                }}
-                className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                  headerTab === "participants"
-                    ? "bg-white dark:bg-zinc-700 text-brand-teal dark:text-white shadow-sm"
-                    : "text-gray-400 dark:text-zinc-500 hover:text-gray-700"
-                }`}
-              >
-                Participants
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Right: Call + 3-dot overflow menu */}
