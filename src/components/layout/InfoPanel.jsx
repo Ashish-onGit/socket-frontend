@@ -224,30 +224,34 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
           )}
         </div>
 
-        {/* Chat Analytics */}
+        {/* User Profile */}
         <div className="px-2">
           <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider pl-1 block mb-3">
-            Chat Analytics
+            User Profile
           </span>
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/20 border border-gray-100 dark:border-white/5 space-y-3 font-sans text-[11px]">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Total Messages</span>
-              <span className="font-bold text-gray-800 dark:text-gray-200">{messages.length}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Last Active</span>
-              <span className="font-bold text-gray-800 dark:text-gray-200 truncate max-w-[150px]">
-                {messages.length > 0 
-                  ? new Date(messages[messages.length - 1].timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
-                  : "Never"}
+              <span className="text-gray-400 font-medium">User ID</span>
+              <span className="font-mono font-bold text-gray-800 dark:text-gray-200 select-all cursor-pointer" title="Select and copy User ID">
+                {chatDetails?.recipient?._id || "••••••••"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Joined Date</span>
-              <span className="font-bold text-gray-800 dark:text-gray-200">
-                {chatDetails?.recipient?.createdAt 
-                  ? new Date(chatDetails.recipient.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
-                  : "June 1, 2026"}
+              <span className="text-gray-400 font-medium">Username</span>
+              <span className="font-semibold text-gray-850 dark:text-gray-200">
+                @{activeConversation}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 font-medium">Calling ID</span>
+              <span className="font-mono font-bold text-brand-teal select-all cursor-pointer" title="Select and copy Call ID">
+                {chatDetails?.recipient?.uniqueId || "••••••••"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 font-medium">Status</span>
+              <span className={`font-bold ${isOnline ? "text-emerald-500" : "text-gray-400"}`}>
+                {isOnline ? "Available" : "Offline"}
               </span>
             </div>
           </div>
