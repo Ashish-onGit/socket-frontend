@@ -220,7 +220,7 @@ export default function CallOverlay({
                 ref={primaryVideoRef}
                 autoPlay
                 playsInline
-                className={`w-full h-full object-cover ${isSwapped ? "transform -scale-x-100" : ""}`}
+                className={`w-full h-full ${isFullscreen ? "object-contain bg-black" : "object-cover"} ${isSwapped ? "transform -scale-x-100" : ""}`}
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-zinc-550 text-xs bg-black/80">
