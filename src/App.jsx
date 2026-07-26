@@ -114,16 +114,51 @@ function App() {
       showToast("Connection to server failed. Reconnecting...", "error");
     };
 
+    const handleForceLogout = (data) => {
+      dispatch(logoutAction());
+      dispatch(loadUserChats(null));
+      socket.disconnect();
+      alert(data?.reason || "Your account has been logged in on another device.");
+      navigate("/login");
+    };
+
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
+    socket.on("force-logout", handleForceLogout);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("connect_error", handleConnectError);
+      socket.off("force-logout", handleForceLogout);
     };
-  }, [showToast]);
+  }, [showToast, dispatch, navigate]);
+
+  // Synchronize authentication logouts/updates across multiple tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "user") {
+        if (!e.newValue) {
+          // User was logged out in another tab
+          dispatch(logoutAction());
+          dispatch(loadUserChats(null));
+          socket.disconnect();
+          navigate("/login");
+        } else {
+          // User was logged in/updated in another tab
+          try {
+            const parsed = JSON.parse(e.newValue);
+            dispatch(loginSuccess({ user: parsed, token: parsed.token }));
+          } catch (err) {
+            console.error("Storage event sync error:", err);
+          }
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [dispatch, navigate]);
 
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
