@@ -69,9 +69,9 @@ const MessageItem = React.memo(
     const reactionSummary = msg.reactions ? Object.entries(msg.reactions) : [];
     return (
       <div
-        className={`flex flex-col group/msg relative py-1.5 w-full ${fromSelf ? "items-end" : "items-start"}`}
+        className={`flex flex-col group/msg relative py-1.5 w-full select-none ${fromSelf ? "items-end" : "items-start"}`}
         onContextMenu={(e) => onContextMenu(e, msg)}
-        onTouchStart={() => onTouchStart(msg)}
+        onTouchStart={(e) => onTouchStart(e, msg)}
         onTouchEnd={onTouchEnd}
         onTouchMove={onTouchMove}
         onTouchCancel={onTouchEnd}
@@ -330,6 +330,7 @@ export default function ChatArea({
   // Mobile long-press menu state
   const [mobileMenuMessage, setMobileMenuMessage] = useState(null);
   const longPressTimer = useRef(null);
+  const touchCoords = useRef({ x: 0, y: 0 });
 
   const [chatWindowWidth, setChatWindowWidth] = useState(window.innerWidth);
   const [isParticipantsBSOpen, setIsParticipantsBSOpen] = useState(false);
@@ -541,10 +542,27 @@ export default function ChatArea({
     }
   };
 
-  const handleMessageTouchStart = (msg) => {
+  const handleMessageTouchStart = (e, msg) => {
     if (window.innerWidth >= 768) return;
+    if (e.touches.length > 1) return;
+
+    const touch = e.touches[0];
+    touchCoords.current = { x: touch.clientX, y: touch.clientY };
+
     longPressTimer.current = setTimeout(() => {
-      setMobileMenuMessage(msg);
+      // Clear any text selection that might have started
+      if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+      }
+      
+      // Open ContextMenu at touch location
+      window.dispatchEvent(new CustomEvent("close-menus"));
+      setContextMenu({
+        isOpen: true,
+        x: touchCoords.current.x,
+        y: touchCoords.current.y,
+        message: msg,
+      });
     }, 600);
   };
 

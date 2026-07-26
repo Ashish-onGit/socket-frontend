@@ -20,6 +20,7 @@ export default function CallOverlay({
   const [micMuted, setMicMuted] = useState(false);
   const [videoOff, setVideoOff] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
   
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isSwapped, setIsSwapped] = useState(false); // Swapping local/remote views
@@ -118,6 +119,24 @@ export default function CallOverlay({
     }
     return () => clearInterval(timer);
   }, [callState]);
+
+  // Auto-hide controls when call connects
+  useEffect(() => {
+    if (callState === "connected") {
+      const timer = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowControls(true);
+    }
+  }, [callState]);
+
+  const handleOverlayClick = (e) => {
+    // If user clicked inside any button or control interactive elements, do not toggle
+    if (e.target.closest("button") || e.target.closest("video")) return;
+    setShowControls((prev) => !prev);
+  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -246,18 +265,21 @@ export default function CallOverlay({
   // 2. Connected Video Call Screen UI
   if (callType === "video") {
     return (
-      <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
+      <div 
+        onClick={handleOverlayClick}
+        className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-6 font-sans overflow-hidden cursor-pointer select-none"
+      >
         {/* Fullscreen Option for Video Call */}
         <button
-          onClick={() => setIsFullscreen((prev) => !prev)}
-          className="absolute top-6 right-6 z-[100] p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white cursor-pointer transition-all active:scale-95 shadow-lg backdrop-blur-md"
+          onClick={(e) => { e.stopPropagation(); setIsFullscreen((prev) => !prev); }}
+          className={`absolute top-6 right-6 z-[100] p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white cursor-pointer transition-all duration-300 active:scale-95 shadow-lg backdrop-blur-md ${showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"}`}
           title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
         >
           {isFullscreen ? <FiMinimize2 size={16} /> : <FiMaximize2 size={16} />}
         </button>
 
         {/* Floating Info Pill at top-left */}
-        <div className="absolute top-6 left-6 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3">
+        <div className={`absolute top-6 left-6 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3 transition-all duration-300 ${showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"}`}>
           <Avatar name={peerUser?.username} size="sm" showStatus={false} />
           <div className="text-left font-sans">
             <p className="text-xs font-bold text-white leading-none">{peerUser?.name || peerUser?.username}</p>
@@ -293,7 +315,7 @@ export default function CallOverlay({
               <div
                 onMouseDown={handleDragStart}
                 onTouchStart={handleDragStart}
-                onClick={handlePreviewClick}
+                onClick={(e) => { e.stopPropagation(); handlePreviewClick(); }}
                 style={{
                   transform: `translate(${position.x}px, ${position.y}px)`,
                 }}
@@ -313,9 +335,9 @@ export default function CallOverlay({
         </div>
 
         {/* Floating Bottom Control Bar */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-6 py-4 rounded-3xl flex items-center gap-6 shadow-2xl">
+        <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-6 py-4 rounded-3xl flex items-center gap-6 shadow-2xl transition-all duration-300 ${showControls ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95 pointer-events-none"}`}>
           <button
-            onClick={handleToggleMic}
+            onClick={(e) => { e.stopPropagation(); handleToggleMic(); }}
             className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
               micMuted
                 ? "bg-red-500/20 border-red-500 text-red-500"
@@ -327,7 +349,7 @@ export default function CallOverlay({
           </button>
 
           <button
-            onClick={handleToggleCamera}
+            onClick={(e) => { e.stopPropagation(); handleToggleCamera(); }}
             className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
               videoOff
                 ? "bg-red-500/20 border-red-500 text-red-500"
@@ -339,7 +361,7 @@ export default function CallOverlay({
           </button>
 
           <button
-            onClick={onHangUp}
+            onClick={(e) => { e.stopPropagation(); onHangUp(); }}
             className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 active:scale-95 transition-all duration-300 hover:rotate-12"
             title="Hang Up"
           >
@@ -352,14 +374,17 @@ export default function CallOverlay({
 
   // 3. Connected Audio Call Screen UI
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-8 font-sans overflow-hidden select-none">
+    <div 
+      onClick={handleOverlayClick}
+      className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-8 font-sans overflow-hidden select-none cursor-pointer"
+    >
       {/* Animated Background Gradients */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-brand-teal/10 blur-3xl animate-pulse" />
       </div>
 
       {/* Top Section */}
-      <div className="w-full flex flex-col items-center mt-12 space-y-3 text-center z-10">
+      <div className={`w-full flex flex-col items-center mt-12 space-y-3 text-center z-10 transition-all duration-300 ${showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4 pointer-events-none"}`}>
         <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-brand-teal bg-brand-teal/10 px-3.5 py-1.5 rounded-full border border-brand-teal/20 shadow-sm">
           Active Voice Call
         </span>
@@ -398,9 +423,9 @@ export default function CallOverlay({
       </div>
 
       {/* Bottom Section Controls */}
-      <div className="w-full max-w-xs mb-12 flex items-center justify-center gap-8 z-10">
+      <div className={`w-full max-w-xs mb-12 flex items-center justify-center gap-8 z-10 transition-all duration-300 ${showControls ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95 pointer-events-none"}`}>
         <button
-          onClick={handleToggleMic}
+          onClick={(e) => { e.stopPropagation(); handleToggleMic(); }}
           className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
             micMuted
               ? "bg-red-500/20 border-red-500 text-red-500"
@@ -412,7 +437,7 @@ export default function CallOverlay({
         </button>
 
         <button
-          onClick={onHangUp}
+          onClick={(e) => { e.stopPropagation(); onHangUp(); }}
           className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 active:scale-95 transition-all duration-300 hover:rotate-12"
           title="Hang Up"
         >
