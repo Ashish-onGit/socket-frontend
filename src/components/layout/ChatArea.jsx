@@ -66,6 +66,51 @@ const MessageItem = React.memo(
     isExpanded,
     onToggleExpand,
   }) => {
+    const startX = useRef(0);
+    const startY = useRef(0);
+    const isDragging = useRef(false);
+    const [dragX, setDragX] = useState(0);
+
+    const handlePointerDown = (e) => {
+      if (e.target.closest("button") || e.target.closest("a") || e.target.closest("img") || e.target.closest("[role='button']")) return;
+      startX.current = e.clientX;
+      startY.current = e.clientY;
+      isDragging.current = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e) => {
+      if (!isDragging.current) return;
+      const deltaX = e.clientX - startX.current;
+      const deltaY = e.clientY - startY.current;
+
+      if (Math.abs(deltaY) > Math.abs(deltaX) && dragX === 0) {
+        isDragging.current = false;
+        setDragX(0);
+        return;
+      }
+
+      if (deltaX > 0) {
+        const cappedX = Math.min(deltaX, 70);
+        setDragX(cappedX);
+      } else {
+        setDragX(0);
+      }
+    };
+
+    const handlePointerUp = (e) => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+
+      if (dragX >= 45) {
+        onReply(msg);
+      }
+      setDragX(0);
+    };
+
     const reactionSummary = msg.reactions ? Object.entries(msg.reactions) : [];
     return (
       <div
@@ -88,15 +133,6 @@ const MessageItem = React.memo(
           </span>
         </div>
 
-        {/* Quoted Reply Above Bubble */}
-        {msg.replyTo && (
-          <div className="text-[10px] text-gray-400 dark:text-zinc-500 mb-1 max-w-[65%] truncate flex items-center gap-1 font-sans pl-1">
-            <FiCornerUpLeft size={11} />
-            Replying to <span className="font-bold">{msg.replyTo.sender}</span>:
-            "{msg.replyTo.message}"
-          </div>
-        )}
-
         {/* Bubble Content */}
         <div className="flex items-end gap-2.5 max-w-[78%] relative">
           {!fromSelf && (
@@ -106,8 +142,28 @@ const MessageItem = React.memo(
           )}
 
           <div className="flex flex-col relative">
+            {/* Slide-to-Reply Indicator */}
             <div
-              className={`p-3 px-3.5 rounded-2xl relative text-xs md:text-sm leading-relaxed break-words font-sans ${
+              className="absolute -left-7 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none transition-all duration-155"
+              style={{
+                opacity: dragX > 15 ? (dragX - 15) / 30 : 0,
+                transform: `scale(${dragX >= 45 ? 1.25 : 1})`,
+                color: dragX >= 45 ? "#14b8a6" : "#94a3b8",
+              }}
+            >
+              <FiCornerUpLeft size={16} />
+            </div>
+
+            <div
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              style={{
+                transform: `translateX(${dragX}px)`,
+                transition: isDragging.current ? "none" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              }}
+              className={`p-3 px-3.5 rounded-2xl relative text-xs md:text-sm leading-relaxed break-words font-sans cursor-grab active:cursor-grabbing ${
                 msg.deleted
                   ? "italic text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#121212] border border-dashed border-gray-200 dark:border-white/5"
                   : fromSelf
@@ -115,6 +171,21 @@ const MessageItem = React.memo(
                     : "bg-white dark:bg-[#121212] text-gray-800 dark:text-gray-100 border border-brand-border-light dark:border-white/5 rounded-bl-none shadow-sm"
               }`}
             >
+              {/* Quoted Reply Preview inside bubble */}
+              {msg.replyTo && !msg.deleted && (
+                <div className={`mb-2 p-2 rounded-lg text-[10px] font-sans border-l-2 leading-snug truncate flex flex-col gap-0.5 select-none ${
+                  fromSelf 
+                    ? "bg-black/5 dark:bg-black/25 border-brand-teal text-gray-700 dark:text-teal-200" 
+                    : "bg-gray-100/50 dark:bg-white/5 border-brand-teal text-gray-500 dark:text-zinc-400"
+                }`}>
+                  <span className="font-extrabold text-brand-teal flex items-center gap-1">
+                    <FiCornerUpLeft size={9} />
+                    {msg.replyTo.sender}
+                  </span>
+                  <span className="opacity-95 truncate">{msg.replyTo.message}</span>
+                </div>
+              )}
+
               {/* File attachments */}
               {msg.fileUrl && !msg.deleted && (
                 <div className="mb-2 overflow-hidden rounded-lg bg-black/5 dark:bg-black/20 p-2 border border-gray-200 dark:border-white/5">
@@ -122,6 +193,7 @@ const MessageItem = React.memo(
                     <div
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         onImageClick && onImageClick(msg.id);
                       }}
                       className="block max-w-xs cursor-zoom-in"
@@ -136,6 +208,7 @@ const MessageItem = React.memo(
                     <a
                       href={msg.fileUrl}
                       download={msg.fileName}
+                      onClick={(e) => e.stopPropagation()}
                       className="flex items-center gap-2 hover:underline text-brand-teal cursor-pointer"
                     >
                       <FiFileText size={18} className="flex-shrink-0" />
@@ -170,42 +243,16 @@ const MessageItem = React.memo(
                 )}
               </div>
 
-              {/* Bubble Footer / Copy & Checkmarks */}
-              {!msg.deleted && msg.message && (
-                <div className="flex items-center justify-between gap-3 mt-1.5 text-[9px] opacity-50 dark:opacity-45 font-sans select-none border-t border-black/5 dark:border-white/5 pt-1.5">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCopy(msg);
-                    }}
-                    className={`flex items-center gap-1 hover:opacity-100 transition-opacity cursor-pointer ${fromSelf ? 'text-white' : 'text-gray-500 dark:text-zinc-455 hover:text-brand-teal'}`}
-                    title="Copy text"
-                  >
-                    <FiCopy size={9} />
-                    <span>Copy</span>
-                  </button>
-                  
-                  <div className="flex items-center gap-1.5">
-                    {msg.edited && <span>edited</span>}
-                    {fromSelf && (
-                      msg.read ? (
-                        <FiCheckSquare size={10} />
-                      ) : (
-                        <FiCheck size={10} />
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Checkmarks fallback for non-text/deleted messages */}
-              {fromSelf && !msg.deleted && !msg.message && (
-                <div className="flex items-center justify-end gap-1 mt-1 text-[9px] opacity-50 font-sans">
+              {/* Checkmarks / Edited inside bubble */}
+              {((fromSelf && !msg.deleted) || msg.edited) && (
+                <div className="flex items-center justify-end gap-1.5 mt-1 text-[9px] opacity-50 font-sans select-none">
                   {msg.edited && <span>edited</span>}
-                  {msg.read ? (
-                    <FiCheckSquare className="text-brand-teal" size={10} />
-                  ) : (
-                    <FiCheck size={10} />
+                  {fromSelf && !msg.deleted && (
+                    msg.read ? (
+                      <FiCheckSquare className="text-brand-teal" size={10} />
+                    ) : (
+                      <FiCheck size={10} />
+                    )
                   )}
                 </div>
               )}
