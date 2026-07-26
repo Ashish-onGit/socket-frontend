@@ -785,7 +785,15 @@ export default function ChatArea({
 
   if (!activeConversation) {
     return (
-      <div className="flex-1 h-full flex flex-col items-center justify-center p-8 bg-brand-bg-light dark:bg-brand-bg-dark relative">
+      <div className="flex-1 h-full flex flex-col items-center justify-center p-8 bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden">
+        {/* Custom Mesh Glow Backdrop (Vite-inspired cyan/purple radial overlay) */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-40 dark:opacity-20">
+          {/* Cyan Glow (top-left) */}
+          <div className="absolute -top-[10%] -left-[10%] w-[65%] h-[65%] rounded-full bg-[#06b6d4]/20 dark:bg-[#06b6d4]/10 blur-[110px] md:blur-[140px]" />
+          {/* Purple Glow (bottom-right) */}
+          <div className="absolute -bottom-[10%] -right-[10%] w-[65%] h-[65%] rounded-full bg-[#a855f7]/20 dark:bg-[#a855f7]/10 blur-[110px] md:blur-[140px]" />
+        </div>
+
         <div className="text-center max-w-sm space-y-3 z-10 select-none">
           <div className="text-5xl animate-float">💬</div>
           <h3 className="text-sm font-extrabold text-gray-800 dark:text-gray-200 font-sans">
@@ -854,6 +862,13 @@ export default function ChatArea({
 
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden">
+      {/* Custom Mesh Glow Backdrop (Vite-inspired cyan/purple radial overlay) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-40 dark:opacity-20">
+        {/* Cyan Glow (top-left) */}
+        <div className="absolute -top-[10%] -left-[10%] w-[65%] h-[65%] rounded-full bg-[#06b6d4]/20 dark:bg-[#06b6d4]/10 blur-[110px] md:blur-[140px]" />
+        {/* Purple Glow (bottom-right) */}
+        <div className="absolute -bottom-[10%] -right-[10%] w-[65%] h-[65%] rounded-full bg-[#a855f7]/20 dark:bg-[#a855f7]/10 blur-[110px] md:blur-[140px]" />
+      </div>
       {/* Chat Header (Responsive pill design & options) */}
       <div className="h-16 px-6 flex items-center justify-between border-b border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-panel-dark relative z-10 select-none">
         
