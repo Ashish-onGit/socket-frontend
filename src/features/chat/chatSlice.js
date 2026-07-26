@@ -71,6 +71,37 @@ const chatSlice = createSlice({
         saveChats(currentUser, state.conversations);
       }
     },
+    toggleMarkUnread: (state, action) => {
+      const { participant, currentUser } = action.payload;
+      const conv = state.conversations[participant];
+      if (conv) {
+        if (conv.unreadCount > 0) {
+          conv.unreadCount = 0;
+          conv.messages.forEach((msg) => {
+            if (msg.sender === participant) {
+              msg.read = true;
+            }
+          });
+        } else {
+          conv.unreadCount = 1;
+          for (let i = conv.messages.length - 1; i >= 0; i--) {
+            if (conv.messages[i].sender === participant) {
+              conv.messages[i].read = false;
+              break;
+            }
+          }
+        }
+        saveChats(currentUser, state.conversations);
+      }
+    },
+    toggleMuteConversation: (state, action) => {
+      const { participant, currentUser } = action.payload;
+      const conv = state.conversations[participant];
+      if (conv) {
+        conv.isMuted = !conv.isMuted;
+        saveChats(currentUser, state.conversations);
+      }
+    },
     clearChat: (state, action) => {
       const { participant, currentUser } = action.payload;
       if (state.conversations[participant]) {
@@ -192,7 +223,9 @@ export const {
   toggleReaction,
   markAsRead,
   setSearchQuery,
-  setConversations
+  setConversations,
+  toggleMarkUnread,
+  toggleMuteConversation
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

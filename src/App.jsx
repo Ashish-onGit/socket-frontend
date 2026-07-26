@@ -223,24 +223,24 @@ function App() {
         {/* Root Redirect */}
         <Route path="/" element={<Navigate to={user ? "/chat" : "/login"} replace />} />
 
-        {["/chat", "/archived", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
-          <Route 
-            key={path}
-            path={path} 
-            element={
-              user ? (
-                <MainLayout
-                  socket={socket}
-                  onLogout={onLogout}
-                  theme={theme}
-                  toggleTheme={toggleTheme}
-                />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-        ))}
+        <Route 
+          element={
+            user ? (
+              <MainLayout
+                socket={socket}
+                onLogout={onLogout}
+                theme={theme}
+                toggleTheme={toggleTheme}
+              />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        >
+          {["/chat", "/archived", "/files", "/channels", "/contacts", "/analytics", "/calls", "/settings"].map((path) => (
+            <Route key={path} path={path} element={null} />
+          ))}
+        </Route>
 
         {/* Fallback routes */}
         <Route path="*" element={<NotFoundPage />} />

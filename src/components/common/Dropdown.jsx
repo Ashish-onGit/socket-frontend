@@ -11,15 +11,40 @@ export default function Dropdown({ trigger, items, align = "right" }) {
         setIsOpen(false);
       }
     };
+    
+    const handleCloseEvent = () => {
+      setIsOpen(false);
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("contextmenu", handleClickOutside);
+    window.addEventListener("close-menus", handleCloseEvent);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("contextmenu", handleClickOutside);
+      window.removeEventListener("close-menus", handleCloseEvent);
+    };
   }, []);
 
   const alignClasses = align === "left" ? "left-0" : "right-0";
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      <div onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }} className="cursor-pointer">{trigger}</div>
+      <div 
+        onClick={(e) => { 
+          e.stopPropagation(); 
+          if (!isOpen) {
+            window.dispatchEvent(new CustomEvent("close-menus"));
+          }
+          setIsOpen(!isOpen); 
+        }} 
+        className="cursor-pointer"
+      >
+        {trigger}
+      </div>
       <AnimatePresence>
         {isOpen && (
           <motion.div

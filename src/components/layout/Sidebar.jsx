@@ -5,13 +5,14 @@ import { motion } from "framer-motion";
 import {
   FiSearch, FiPlus, FiArchive, FiTrash2, FiChevronLeft,
   FiSliders, FiChevronRight, FiChevronDown, FiLogOut,
-  FiX, FiLoader, FiUsers, FiMessageSquare,
+  FiX, FiLoader, FiUsers, FiMessageSquare, FiEye, FiVolumeX, FiUser
 } from "react-icons/fi";
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs";
 import ConfirmDialog from "../common/ConfirmDialog";
+import ContextMenu from "../common/ContextMenu";
 import {
   setActiveConversation, createConversation, pinConversation,
-  archiveConversation, deleteConversation,
+  archiveConversation, deleteConversation, toggleMarkUnread, toggleMuteConversation
 } from "../../features/chat/chatSlice";
 import Avatar from "../common/Avatar";
 import Dropdown from "../common/Dropdown";
@@ -23,90 +24,148 @@ const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 // ─── ConversationItem (memoized for perf) ───────────────────────────────────
 
 const ConversationItem = React.memo(({
-  chat, isActive, currentUser, onSelect, onPin, onArchive, onDelete, getRelativeTime,
-}) => (
-  <div
-    className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative hover:z-30 focus-within:z-30 ${
-      isActive
-        ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20"
-        : "hover:bg-gray-100 dark:hover:bg-white/5"
-    }`}
-    onClick={onSelect}
-  >
-    <div className="flex items-center gap-3 min-w-0 flex-1">
-      <Avatar name={chat.username} size="md" isOnline={chat.isOnline} />
-      <div className="min-w-0 flex-1 font-sans">
-        <div className="flex items-center justify-between">
-          <span className={`text-[13px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
-            {chat.recipient?.name || chat.username}
-          </span>
-          <span className={`text-[10px] ${isActive ? "text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
-            {getRelativeTime(chat.lastMsg?.timestamp)}
-          </span>
-        </div>
+  chat, isActive, currentUser, onSelect, onPin, onArchive, onDelete, onContextMenu, onMarkUnread, onMute, onViewProfile, getRelativeTime,
+}) => {
+  const longPressTimer = React.useRef(null);
 
-        <div className="flex items-center justify-between mt-1">
-          <p className={`text-[11px] truncate max-w-[155px] ${isActive ? "text-white/90" : "text-gray-500 dark:text-gray-450"}`}>
-            {chat.lastMsg ? (
-              chat.lastMsg.deleted ? (
-                <span className="italic opacity-85">Message deleted</span>
+  const handleTouchStart = (e) => {
+    if (e.touches.length > 1) return;
+    const touch = e.touches[0];
+    const clientX = touch.clientX;
+    const clientY = touch.clientY;
+
+    longPressTimer.current = setTimeout(() => {
+      onContextMenu && onContextMenu(e, clientX, clientY, chat.username);
+    }, 600); // 600ms long press threshold
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    onContextMenu && onContextMenu(e, e.clientX, e.clientY, chat.username);
+  };
+
+  return (
+    <div
+      className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative hover:z-30 focus-within:z-30 ${
+        isActive
+          ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20"
+          : "hover:bg-gray-100 dark:hover:bg-white/5"
+      }`}
+      onClick={onSelect}
+      onContextMenu={handleContextMenu}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onTouchCancel={handleTouchEnd}
+    >
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <Avatar name={chat.username} size="md" isOnline={chat.isOnline} />
+        <div className="min-w-0 flex-1 font-sans">
+          <div className="flex items-center justify-between">
+            <span className={`text-[13px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
+              {chat.recipient?.name || chat.username}
+            </span>
+            <span className={`text-[10px] ${isActive ? "text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
+              {getRelativeTime(chat.lastMsg?.timestamp)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between mt-1">
+            <p className={`text-[11px] truncate max-w-[155px] ${isActive ? "text-white/90" : "text-gray-500 dark:text-gray-450"}`}>
+              {chat.lastMsg ? (
+                chat.lastMsg.deleted ? (
+                  <span className="italic opacity-85">Message deleted</span>
+                ) : (
+                  chat.lastMsg.message
+                )
               ) : (
-                chat.lastMsg.message
-              )
-            ) : (
-              <span className="italic opacity-70">No messages yet</span>
-            )}
-          </p>
+                <span className="italic opacity-70">No messages yet</span>
+              )}
+            </p>
 
-          <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
-            {chat.isPinned && (
-              <BsPinAngleFill size={11} className={isActive ? "text-white" : "text-brand-teal"} />
-            )}
-            {chat.unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-[9.5px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
-                {chat.unreadCount}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
+              {chat.isMuted && (
+                <FiVolumeX size={10} className={isActive ? "text-white" : "text-gray-450 dark:text-zinc-500"} />
+              )}
+              {chat.isPinned && (
+                <BsPinAngleFill size={11} className={isActive ? "text-white" : "text-brand-teal"} />
+              )}
+              {chat.unreadCount > 0 && (
+                <span className="bg-red-500 text-white text-[9.5px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                  {chat.unreadCount}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {/* Dropdown Menu */}
-    <div className="ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-      <Dropdown
-        trigger={
-          <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors opacity-75 hover:opacity-100 ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
-            <FiChevronDown size={14} />
-          </button>
-        }
-        items={[
-          {
-            label: chat.isPinned ? "Unpin Chat" : "Pin Chat",
-            icon: <BsPinAngle size={12} />,
-            onClick: onPin,
-          },
-          {
-            label: chat.isArchived ? "Unarchive Chat" : "Archive Chat",
-            icon: <FiArchive size={12} />,
-            onClick: onArchive,
-          },
-          { divider: true },
-          {
-            label: "Delete Chat",
-            icon: <FiTrash2 size={12} />,
-            danger: true,
-            onClick: onDelete,
-          },
-        ]}
-      />
+      {/* Dropdown Menu */}
+      <div className="ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <Dropdown
+          trigger={
+            <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors opacity-75 hover:opacity-100 ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
+              <FiChevronDown size={14} />
+            </button>
+          }
+          items={[
+            {
+              label: chat.isPinned ? "Unpin Chat" : "Pin Chat",
+              icon: <BsPinAngle size={12} />,
+              onClick: onPin,
+            },
+            {
+              label: chat.isArchived ? "Unarchive Chat" : "Archive Chat",
+              icon: <FiArchive size={12} />,
+              onClick: onArchive,
+            },
+            {
+              label: chat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread",
+              icon: <FiEye size={12} />,
+              onClick: onMarkUnread,
+            },
+            {
+              label: chat.isMuted ? "Unmute Notifications" : "Mute Notifications",
+              icon: <FiVolumeX size={12} />,
+              onClick: onMute,
+            },
+            {
+              label: "View Profile",
+              icon: <FiUser size={12} />,
+              onClick: onViewProfile,
+            },
+            { divider: true },
+            {
+              label: "Delete Chat",
+              icon: <FiTrash2 size={12} />,
+              danger: true,
+              onClick: onDelete,
+            },
+          ]}
+        />
+      </div>
     </div>
-  </div>
-), (prev, next) => (
+  );
+}, (prev, next) => (
   prev.isActive === next.isActive &&
   prev.chat.username === next.chat.username &&
   prev.chat.isOnline === next.chat.isOnline &&
   prev.chat.isPinned === next.chat.isPinned &&
+  prev.chat.isMuted === next.chat.isMuted &&
   prev.chat.isArchived === next.chat.isArchived &&
   prev.chat.unreadCount === next.chat.unreadCount &&
   prev.chat.lastMsg?.timestamp === next.chat.lastMsg?.timestamp &&
@@ -305,7 +364,7 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 
-export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSettings, onLogout }) {
+export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnected = false, onOpenSettings, onLogout }) {
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.auth.user);
   const conversations = useSelector((state) => state.chat.conversations);
@@ -314,9 +373,62 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewChat, setShowNewChat] = useState(false);
   const [confirmDeleteChat, setConfirmDeleteChat] = useState(null);
+  const [contextMenu, setContextMenu] = useState({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    participant: null,
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const showArchived = location.pathname === "/archived";
+
+  const handleContextMenu = (e, x, y, participant) => {
+    window.dispatchEvent(new CustomEvent("close-menus"));
+    setContextMenu({
+      isOpen: true,
+      x,
+      y,
+      participant,
+    });
+  };
+
+  const selectedChat = conversations[contextMenu.participant];
+
+  const contextMenuItems = selectedChat ? [
+    {
+      label: selectedChat.isPinned ? "Unpin Chat" : "Pin Chat",
+      icon: <BsPinAngle size={12} />,
+      onClick: () => dispatch(pinConversation({ participant: contextMenu.participant, currentUser: currentUser.username })),
+    },
+    {
+      label: selectedChat.isArchived ? "Unarchive Chat" : "Archive Chat",
+      icon: <FiArchive size={12} />,
+      onClick: () => dispatch(archiveConversation({ participant: contextMenu.participant, currentUser: currentUser.username })),
+    },
+    {
+      label: selectedChat.unreadCount > 0 ? "Mark as Read" : "Mark as Unread",
+      icon: <FiEye size={12} />,
+      onClick: () => dispatch(toggleMarkUnread({ participant: contextMenu.participant, currentUser: currentUser.username })),
+    },
+    {
+      label: selectedChat.isMuted ? "Unmute Notifications" : "Mute Notifications",
+      icon: <FiVolumeX size={12} />,
+      onClick: () => dispatch(toggleMuteConversation({ participant: contextMenu.participant, currentUser: currentUser.username })),
+    },
+    {
+      label: "View Profile",
+      icon: <FiUser size={12} />,
+      onClick: () => navigate(`/contacts?username=${encodeURIComponent(contextMenu.participant)}`),
+    },
+    { divider: true },
+    {
+      label: "Delete Chat",
+      icon: <FiTrash2 size={12} />,
+      danger: true,
+      onClick: () => setConfirmDeleteChat(contextMenu.participant),
+    },
+  ] : [];
 
   // When a user is selected from the search panel
   const handleConversationStarted = (username, recipient) => {
@@ -414,8 +526,7 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
         <div className="flex items-center gap-3">
           {!showArchived && (
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider">Live</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-gray-400"}`} />
             </div>
           )}
           {!showArchived && (
@@ -448,12 +559,14 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
 
       {/* Profile row */}
       <div className="px-4 py-3 flex items-center gap-3 border-b border-brand-border-light dark:border-white/5">
-        <Avatar name={currentUser?.username} size="sm" isOnline={true} showStatus={true} />
+        <Avatar name={currentUser?.username} size="sm" isOnline={isConnected} showStatus={true} />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-gray-800 dark:text-gray-100 truncate font-sans">{currentUser?.username}</p>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[9px] font-semibold text-emerald-500">Available</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-emerald-500" : "bg-gray-400"}`} />
+            <span className={`text-[9px] font-semibold ${isConnected ? "text-emerald-500" : "text-gray-400"}`}>
+              {isConnected ? "Connected" : "Offline"}
+            </span>
           </div>
         </div>
       </div>
@@ -532,6 +645,10 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
                     onPin={() => handlePin(chat.username)}
                     onArchive={() => handleArchive(chat.username)}
                     onDelete={() => setConfirmDeleteChat(chat.username)}
+                    onContextMenu={handleContextMenu}
+                    onMarkUnread={() => dispatch(toggleMarkUnread({ participant: chat.username, currentUser: currentUser.username }))}
+                    onMute={() => dispatch(toggleMuteConversation({ participant: chat.username, currentUser: currentUser.username }))}
+                    onViewProfile={() => navigate(`/contacts?username=${encodeURIComponent(chat.username)}`)}
                     getRelativeTime={getRelativeTime}
                   />
                 ))}
@@ -554,6 +671,10 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
                     onPin={() => handlePin(chat.username)}
                     onArchive={() => handleArchive(chat.username)}
                     onDelete={() => setConfirmDeleteChat(chat.username)}
+                    onContextMenu={handleContextMenu}
+                    onMarkUnread={() => dispatch(toggleMarkUnread({ participant: chat.username, currentUser: currentUser.username }))}
+                    onMute={() => dispatch(toggleMuteConversation({ participant: chat.username, currentUser: currentUser.username }))}
+                    onViewProfile={() => navigate(`/contacts?username=${encodeURIComponent(chat.username)}`)}
                     getRelativeTime={getRelativeTime}
                   />
                 ))}
@@ -582,6 +703,14 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], onOpenSe
         }}
         title="Delete Conversation"
         message={`Are you sure you want to delete the conversation with @${confirmDeleteChat}? All message history will be permanently deleted.`}
+      />
+
+      <ContextMenu
+        x={contextMenu.x}
+        y={contextMenu.y}
+        isOpen={contextMenu.isOpen}
+        onClose={() => setContextMenu((c) => ({ ...c, isOpen: false }))}
+        items={contextMenuItems}
       />
     </div>
   );

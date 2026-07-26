@@ -10,6 +10,8 @@ import {
   FiPaperclip,
   FiSmile,
   FiCornerUpLeft,
+  FiMaximize2,
+  FiMinimize2,
   FiEdit3,
   FiCopy,
   FiShare2,
@@ -42,6 +44,7 @@ import ConfirmDialog from "../common/ConfirmDialog";
 import Tooltip from "../common/Tooltip";
 import Dropdown from "../common/Dropdown";
 import EmojiPicker from "emoji-picker-react";
+import ImageViewer from "../common/ImageViewer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useToast } from "../common/ToastContext";
 
@@ -59,6 +62,9 @@ const MessageItem = React.memo(
     onCopy,
     onEdit,
     onDelete,
+    onImageClick,
+    isExpanded,
+    onToggleExpand,
   }) => {
     const reactionSummary = msg.reactions ? Object.entries(msg.reactions) : [];
     return (
@@ -103,28 +109,29 @@ const MessageItem = React.memo(
             <div
               className={`p-3 px-3.5 rounded-2xl relative text-xs md:text-sm leading-relaxed break-words font-sans ${
                 msg.deleted
-                  ? "italic text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10"
+                  ? "italic text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#121212] border border-dashed border-gray-200 dark:border-white/5"
                   : fromSelf
-                    ? "bg-[#DDE9F9] dark:bg-zinc-800 text-gray-800 dark:text-gray-100 rounded-br-none"
-                    : "bg-white dark:bg-zinc-900/60 text-gray-800 dark:text-gray-100 border border-brand-border-light dark:border-white/5 rounded-bl-none shadow-sm"
+                    ? "bg-[#DDE9F9] dark:bg-brand-teal/20 dark:text-teal-100 border border-transparent dark:border-brand-teal/20 text-gray-800 rounded-br-none"
+                    : "bg-white dark:bg-[#121212] text-gray-800 dark:text-gray-100 border border-brand-border-light dark:border-white/5 rounded-bl-none shadow-sm"
               }`}
             >
               {/* File attachments */}
               {msg.fileUrl && !msg.deleted && (
                 <div className="mb-2 overflow-hidden rounded-lg bg-black/5 dark:bg-black/20 p-2 border border-gray-200 dark:border-white/5">
                   {msg.type === "image" ? (
-                    <a
-                      href={msg.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block max-w-xs"
+                    <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onImageClick && onImageClick(msg.id);
+                      }}
+                      className="block max-w-xs cursor-zoom-in"
                     >
                       <img
                         src={msg.fileUrl}
                         alt={msg.fileName}
                         className="max-h-36 rounded object-cover hover:opacity-90 transition-opacity"
                       />
-                    </a>
+                    </div>
                   ) : (
                     <a
                       href={msg.fileUrl}
@@ -144,7 +151,24 @@ const MessageItem = React.memo(
               )}
 
               {/* Message Body */}
-              <p className="whitespace-pre-wrap">{msg.message}</p>
+              <div>
+                <p className="whitespace-pre-wrap">
+                  {msg.message && msg.message.length > 280 && !isExpanded
+                    ? `${msg.message.slice(0, 280)}...`
+                    : msg.message}
+                </p>
+                {msg.message && msg.message.length > 280 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleExpand && onToggleExpand();
+                    }}
+                    className="text-[10px] font-extrabold text-brand-teal hover:underline cursor-pointer mt-1.5 focus:outline-none"
+                  >
+                    {isExpanded ? "Show Less" : "Read More"}
+                  </button>
+                )}
+              </div>
 
               {/* Checkmarks inside bubble */}
               {fromSelf && !msg.deleted && (
@@ -209,6 +233,7 @@ const MessageItem = React.memo(
   },
   (prevProps, nextProps) => {
     return (
+      prevProps.isExpanded === nextProps.isExpanded &&
       prevProps.msg.id === nextProps.msg.id &&
       prevProps.msg.message === nextProps.msg.message &&
       prevProps.msg.deleted === nextProps.msg.deleted &&
@@ -226,6 +251,7 @@ export default function ChatArea({
   onlineUsers = [],
   typingUsers = {},
   onToggleInfoPanel,
+  onInitiateCall,
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -280,6 +306,27 @@ export default function ChatArea({
   const [chatWindowWidth, setChatWindowWidth] = useState(window.innerWidth);
   const [isParticipantsBSOpen, setIsParticipantsBSOpen] = useState(false);
 
+  // Custom fullscreen image viewer states
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  
+  // Track expanded message IDs
+  const [expandedMessageIds, setExpandedMessageIds] = useState({});
+
+  // Extract all images in current chat conversation
+  const imageMessages = messages.filter((m) => m.type === "image" && m.fileUrl && !m.deleted);
+  const viewerImages = imageMessages.map((m) => ({
+    url: m.fileUrl,
+    name: m.fileName || "Shared Image",
+    msgId: m.id,
+  }));
+
+  const handleImageClick = (msgId) => {
+    const idx = viewerImages.findIndex((img) => img.msgId === msgId);
+    setViewerIndex(idx >= 0 ? idx : 0);
+    setIsViewerOpen(true);
+  };
+
   useEffect(() => {
     const handleResize = () => setChatWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -290,6 +337,33 @@ export default function ChatArea({
   useEffect(() => {
     setVisibleMessagesCount(50);
   }, [activeConversation]);
+
+  // Fetch full details of the active conversation participant
+  const [activeProfile, setActiveProfile] = useState(null);
+  useEffect(() => {
+    const fetchActiveProfile = async () => {
+      if (!activeConversation) {
+        setActiveProfile(null);
+        return;
+      }
+      try {
+        const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+        const res = await fetch(`${backendURL}/api/users/search?query=${encodeURIComponent(activeConversation)}`, {
+          headers: {
+            "Authorization": `Bearer ${currentUser?.token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const exact = data.find((u) => u.username === activeConversation);
+          setActiveProfile(exact || null);
+        }
+      } catch (err) {
+        console.error("Failed to load user profile in ChatArea", err);
+      }
+    };
+    fetchActiveProfile();
+  }, [activeConversation, currentUser?.token]);
 
   // Smooth scroll
   useEffect(() => {
@@ -656,6 +730,23 @@ export default function ChatArea({
         icon: <FiEdit3 size={13} />,
         onClick: () => handleStartEdit(msg),
       });
+    }
+
+    if (msg.message && msg.message.length > 280) {
+      const currentlyExpanded = !!expandedMessageIds[msg.id];
+      items.push({
+        label: currentlyExpanded ? "Read Less" : "Read More",
+        icon: currentlyExpanded ? <FiMinimize2 size={13} /> : <FiMaximize2 size={13} />,
+        onClick: () => {
+          setExpandedMessageIds((prev) => ({
+            ...prev,
+            [msg.id]: !prev[msg.id],
+          }));
+        },
+      });
+    }
+
+    if (msg.sender === currentUser.username && !msg.deleted) {
       items.push({ divider: true });
       items.push({
         label: "Delete Message",
@@ -734,14 +825,41 @@ export default function ChatArea({
             )}
           </AnimatePresence>
 
-          {/* Call Button — always visible, prominent */}
-          <button
-            onClick={() => showToast("Starting voice call...", "info")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 transition shadow-sm shadow-brand-teal/20 cursor-pointer flex-shrink-0"
-          >
-            <FiPhone size={13} />
-            <span className="hidden sm:inline">Call</span>
-          </button>
+          {/* Call Dropdown — Voice or Video selection */}
+          <Dropdown
+            trigger={
+              <button
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 transition shadow-sm shadow-brand-teal/20 cursor-pointer flex-shrink-0"
+              >
+                <FiPhone size={13} />
+                <span className="hidden sm:inline">Call</span>
+              </button>
+            }
+            items={[
+              {
+                label: "Voice Call",
+                icon: <FiPhone size={13} />,
+                onClick: () => {
+                  if (activeProfile?.uniqueId) {
+                    onInitiateCall(activeProfile.uniqueId, "audio");
+                  } else {
+                    showToast("User does not have a valid Call ID.", "error");
+                  }
+                }
+              },
+              {
+                label: "Video Call",
+                icon: <FiVideo size={13} />,
+                onClick: () => {
+                  if (activeProfile?.uniqueId) {
+                    onInitiateCall(activeProfile.uniqueId, "video");
+                  } else {
+                    showToast("User does not have a valid Call ID.", "error");
+                  }
+                }
+              }
+            ]}
+          />
 
           {/* 3-dot More Menu */}
           <Dropdown
@@ -836,6 +954,7 @@ export default function ChatArea({
                         currentUser={currentUser}
                         onContextMenu={(e, message) => {
                           e.preventDefault();
+                          window.dispatchEvent(new CustomEvent("close-menus"));
                           setContextMenu({
                             isOpen: true,
                             x: e.clientX,
@@ -854,6 +973,14 @@ export default function ChatArea({
                         onCopy={handleCopyMessage}
                         onEdit={handleStartEdit}
                         onDelete={(message) => setConfirmDeleteMsg(message)}
+                        onImageClick={handleImageClick}
+                        isExpanded={!!expandedMessageIds[msg.id]}
+                        onToggleExpand={() => {
+                          setExpandedMessageIds((prev) => ({
+                            ...prev,
+                            [msg.id]: !prev[msg.id],
+                          }));
+                        }}
                       />
                     );
                   })}
@@ -1147,6 +1274,13 @@ export default function ChatArea({
           </>
         )}
       </AnimatePresence>
+
+      <ImageViewer
+        isOpen={isViewerOpen}
+        images={viewerImages}
+        initialIndex={viewerIndex}
+        onClose={() => setIsViewerOpen(false)}
+      />
     </div>
   );
 }

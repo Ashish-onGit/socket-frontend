@@ -104,15 +104,32 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // States managed locally
+  const [isConnected, setIsConnected] = useState(socket ? socket.connected : false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [typingUsers, setTypingUsers] = useState({}); // { [username]: boolean }
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleConnect = () => setIsConnected(true);
+    const handleDisconnect = () => setIsConnected(false);
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    setIsConnected(socket.connected);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+    };
+  }, [socket]);
 
   // Settings states
   const [settingsBio, setSettingsBio] = useState(
     currentUser?.bio || "Hey there! I am using SocketChat.",
   );
 
-  // Load chats from database on login
+  // Load chats from database on login or socket reconnect
   useEffect(() => {
     if (currentUser?.token) {
       const fetchChats = async () => {
@@ -134,7 +151,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
       };
       fetchChats();
     }
-  }, [currentUser?.token, dispatch]);
+  }, [currentUser?.token, isConnected, dispatch]);
 
   // Hydrate settings bio
   useEffect(() => {
@@ -186,24 +203,24 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
     // Receive message listener
     socket.on("receive_message", (data) => {
       // Re-route message to redux
-      // Set receiver as currentUser
       dispatch(
         addMessage({
           message: data,
           currentUser: currentUser.username,
         }),
       );
-      // Auto-consider outgoing messages as read by other user if they replied
+      
+      const isSelf = data.sender === currentUser.username;
       dispatch(
         markAsRead({
-          participant: data.sender,
+          participant: isSelf ? data.receiver : data.sender,
           currentUser: currentUser.username,
-          fromSelf: false,
+          fromSelf: isSelf,
         }),
       );
       
       // Trigger system notification if the app is out of focus / backgrounded
-      if (document.visibilityState !== "visible" || document.hidden) {
+      if (!isSelf && (document.visibilityState !== "visible" || document.hidden)) {
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
           const notif = new Notification(`New message from ${data.sender}`, {
             body: data.content || "Sent you a file",
@@ -218,33 +235,36 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
     // Message events listener
     socket.on("message_edited", (data) => {
+      const isSelf = data.sender === currentUser.username;
       dispatch(
         editMessage({
           messageId: data.id,
           newContent: data.newContent,
-          participant: data.sender,
+          participant: isSelf ? data.receiver : data.sender,
           currentUser: currentUser.username,
         }),
       );
     });
 
     socket.on("message_deleted", (data) => {
+      const isSelf = data.sender === currentUser.username;
       dispatch(
         deleteMessage({
           messageId: data.id,
-          participant: data.sender,
+          participant: isSelf ? data.receiver : data.sender,
           currentUser: currentUser.username,
         }),
       );
     });
 
     socket.on("message_reacted", (data) => {
+      const isSelf = data.sender === currentUser.username;
       dispatch(
         toggleReaction({
           messageId: data.id,
           emoji: data.emoji,
           username: data.username,
-          participant: data.sender,
+          participant: isSelf ? data.receiver : data.sender,
           currentUser: currentUser.username,
         }),
       );
@@ -255,7 +275,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         markAsRead({
           participant: data.sender,
           currentUser: currentUser.username,
-          fromSelf: false,
+          fromSelf: data.bySelf ? true : false,
         }),
       );
     });
@@ -350,6 +370,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         theme={theme}
         toggleTheme={toggleTheme}
         onlineUsers={onlineUsers}
+        isConnected={isConnected}
         onOpenSettings={() => navigate("/settings")}
         onLogout={() => setShowLogoutConfirm(true)}
       />
@@ -360,6 +381,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
         onlineUsers={onlineUsers}
         typingUsers={typingUsers}
         onToggleInfoPanel={() => setShowInfoPanel(!showInfoPanel)}
+        onInitiateCall={callController.initiateCall}
       />
     );
     showRightPanel = showInfoPanel && activeConversation;
@@ -384,7 +406,7 @@ export default function MainLayout({ socket, onLogout, theme, toggleTheme }) {
 
   const mobileNavItems = [
     { icon: <FiMessageSquare size={18} />, label: "Chats", path: "/chat" },
-    { icon: <FiArchive size={18} />, label: "Archive", path: "/archived" },
+    { icon: <FiUsers size={18} />, label: "Contacts", path: "/contacts" },
     { icon: <FiFileText size={18} />, label: "Files", path: "/files" },
     { icon: <FiVideo size={18} />, label: "Calls", path: "/calls" },
     { icon: <FiUser size={18} />, label: "Profile", path: "/settings" },

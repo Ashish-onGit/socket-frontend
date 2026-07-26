@@ -10,10 +10,24 @@ export default function ContextMenu({ x, y, isOpen, onClose, items, onReact }) {
         onClose();
       }
     };
+
+    const handleCloseEvent = () => {
+      onClose();
+    };
+
     if (isOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("touchstart", handleOutsideClick);
+      document.addEventListener("contextmenu", handleOutsideClick);
+      window.addEventListener("close-menus", handleCloseEvent);
     }
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+      document.removeEventListener("contextmenu", handleOutsideClick);
+      window.removeEventListener("close-menus", handleCloseEvent);
+    };
   }, [isOpen, onClose]);
 
   // Adjust menu placement to avoid clipping on screens

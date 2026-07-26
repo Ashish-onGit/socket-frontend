@@ -1,11 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { FiPhone, FiVideo, FiArrowUpRight, FiArrowDownLeft, FiClock, FiLoader } from "react-icons/fi";
 import Avatar from "../common/Avatar";
+import { useToast } from "../common/ToastContext";
+import ConfirmDialog from "../common/ConfirmDialog";
 
 export default function CallHistoryList({ currentUser, onInitiateCall }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { showToast } = useToast();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const handleClearLogs = async () => {
+    try {
+      const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+      const userData = localStorage.getItem("user");
+      const token = userData ? JSON.parse(userData).token : null;
+      
+      const res = await fetch(`${backendURL}/api/calls/history`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setHistory([]);
+        showToast("Call history cleared successfully", "success");
+      } else {
+        showToast("Failed to clear call history", "error");
+      }
+    } catch (err) {
+      showToast("Server connection error", "error");
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -99,15 +127,23 @@ export default function CallHistoryList({ currentUser, onInitiateCall }) {
         <h4 className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
           Recent Calls
         </h4>
-        <button
-          onClick={fetchHistory}
-          className="text-[9px] font-bold text-brand-teal hover:underline cursor-pointer"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsConfirmOpen(true)}
+            className="text-[9px] font-bold text-red-500 hover:underline cursor-pointer"
+          >
+            Clear Logs
+          </button>
+          <button
+            onClick={fetchHistory}
+            className="text-[9px] font-bold text-brand-teal hover:underline cursor-pointer"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scrollbar pr-1">
+      <div className="space-y-2">
         {history.map((call) => {
           const isCaller = call.caller?._id === currentUser?._id;
           const peer = isCaller ? call.receiver : call.caller;
@@ -176,6 +212,17 @@ export default function CallHistoryList({ currentUser, onInitiateCall }) {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleClearLogs}
+        title="Clear Call Logs"
+        message="Are you sure you want to clear your call logs? This cannot be undone."
+        confirmLabel="Clear"
+        cancelLabel="Cancel"
+        type="danger"
+      />
     </div>
   );
 }

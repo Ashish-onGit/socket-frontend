@@ -366,15 +366,27 @@ export function ContactsSidebar({ onlineUsers }) {
                 <div 
                   key={usr.username} 
                   onClick={() => navigate(`/contacts?username=${usr.username}`)}
-                  className={`flex items-center justify-between p-2.5 rounded-xl transition cursor-pointer ${
-                    isActive ? "bg-brand-teal text-white shadow-md shadow-brand-teal/20" : "hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
+                  className={`flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer ${
+                    isActive 
+                      ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20" 
+                      : "hover:bg-gray-150 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/5 text-gray-700 dark:text-gray-200"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Avatar name={usr.username} size="sm" isOnline={isOnline} />
-                    <div className="text-left font-sans min-w-0">
-                      <p className={`text-[11px] font-bold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{usr.name || usr.username}</p>
-                      <p className={`text-[9px] truncate ${isActive ? "text-white/85" : "text-gray-400"} mt-0.5`}>ID: {usr.uniqueId || "••••••••"} • {usr.bio || "Available"}</p>
+                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                    <Avatar name={usr.username} size="md" isOnline={isOnline} />
+                    <div className="text-left font-sans min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-[12px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
+                          {usr.name || usr.username}
+                        </span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse" : "bg-gray-350 dark:bg-zinc-700"}`} />
+                      </div>
+                      <p className={`text-[9.5px] font-mono font-bold ${isActive ? "text-white/80" : "text-brand-teal/90"} mt-0.5`}>
+                        ID: {usr.uniqueId || "••••••••"}
+                      </p>
+                      <p className={`text-[9px] truncate ${isActive ? "text-white/70" : "text-gray-400 dark:text-zinc-550"} mt-0.5`}>
+                        {usr.bio || "Hey there! I am using SocketChat."}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -748,7 +760,7 @@ export function SettingsSidebar() {
   return null;
 }
 
-export function CosmosBackground() {
+export const CosmosBackground = React.memo(function CosmosBackground() {
   const canvasRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -762,7 +774,7 @@ export function CosmosBackground() {
     let height = (canvas.height = canvas.offsetHeight);
 
     const particles = [];
-    const maxParticles = 65;
+    const maxParticles = 40;
     const mouse = { x: null, y: null, active: false };
 
     class Particle {
@@ -913,7 +925,7 @@ export function CosmosBackground() {
       className="absolute inset-0 w-full h-full pointer-events-none z-0"
     />
   );
-}
+});
 
 export function SettingsMainArea({
   currentUser,
