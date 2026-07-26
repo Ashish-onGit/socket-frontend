@@ -157,62 +157,119 @@ export default function CallOverlay({
     ? "w-full absolute bottom-10 left-0 right-0 z-30 flex items-center justify-around max-w-xs mx-auto"
     : "w-full max-w-xs mb-10 flex items-center justify-around z-10";
 
+  const isIncoming = callState === "ringing";
+  const isOutgoing = callState === "dialing";
+
   // Check if a feed has active tracks
   const hasRemoteFeed = remoteStream && remoteStream.getTracks().length > 0;
   const hasLocalFeed = localStream && !videoOff && localStream.getTracks().length > 0;
 
-  return (
-    <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-6 font-sans">
-      
-      {/* Fullscreen Option for Video Call */}
-      {callState === "connected" && callType === "video" && (
+  // 1. Ringing & Dialing Screen UI
+  if (callState === "ringing" || callState === "dialing") {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-8 font-sans overflow-hidden select-none">
+        {/* Animated Background Gradients */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-brand-teal/10 blur-3xl animate-pulse" />
+          <div className="absolute -top-20 -left-20 w-[300px] h-[300px] rounded-full bg-brand-teal/5 blur-3xl" />
+        </div>
+
+        {/* Top Header */}
+        <div className="w-full flex flex-col items-center mt-12 space-y-4 text-center z-10">
+          <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-brand-teal bg-brand-teal/10 px-3.5 py-1.5 rounded-full border border-brand-teal/20 shadow-sm animate-pulse">
+            {isIncoming 
+              ? `Incoming ${callType === "video" ? "Video" : "Voice"} Call`
+              : `Calling (${callType === "video" ? "Video" : "Voice"})`}
+          </span>
+          <h2 className="text-2xl font-extrabold text-white tracking-tight">
+            {peerUser?.name || peerUser?.username}
+          </h2>
+          <p className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-widest">
+            {isIncoming ? "Ringing..." : "Connecting..."}
+          </p>
+        </div>
+
+        {/* Center: Ripple Pulsing Avatar */}
+        <div className="flex-1 w-full flex items-center justify-center relative z-10 my-4">
+          <div className="relative flex items-center justify-center">
+            {/* Pulsing Ripple Rings */}
+            <div className="absolute w-36 h-36 rounded-full border border-brand-teal/20 animate-ping opacity-60 pointer-events-none" style={{ animationDuration: "2.5s" }} />
+            <div className="absolute w-52 h-52 rounded-full border border-brand-teal/10 animate-ping opacity-45 pointer-events-none" style={{ animationDuration: "3.5s" }} />
+            <div className="absolute w-68 h-68 rounded-full border border-brand-teal/5 animate-ping opacity-25 pointer-events-none" style={{ animationDuration: "4.5s" }} />
+
+            {/* Glowing Avatar Backing */}
+            <div className="absolute inset-0 rounded-full bg-brand-teal/20 blur-md pointer-events-none" />
+
+            <div className="relative p-1 rounded-full bg-gradient-to-tr from-brand-teal to-transparent shadow-2xl shadow-brand-teal/30">
+              <Avatar name={peerUser?.username} size="xxl" showStatus={false} />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="w-full max-w-xs mb-12 flex items-center justify-center gap-10 z-10">
+          {isIncoming ? (
+            <>
+              {/* Reject */}
+              <button
+                onClick={onReject}
+                className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-red-500/50 active:scale-95 transition-all duration-300 hover:rotate-12"
+                title="Decline Call"
+              >
+                <FiPhoneOff size={24} />
+              </button>
+
+              {/* Accept */}
+              <button
+                onClick={onAccept}
+                className="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 active:scale-95 transition-all duration-300 animate-pulse"
+                title="Answer Call"
+              >
+                {callType === "video" ? <FiVideo size={24} /> : <FiPhone size={24} />}
+              </button>
+            </>
+          ) : (
+            /* Cancel Outgoing */
+            <button
+              onClick={onCancel}
+              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 hover:shadow-red-500/50 active:scale-95 transition-all duration-300 hover:rotate-12"
+              title="Cancel Call"
+            >
+              <FiPhoneOff size={24} />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Connected Video Call Screen UI
+  if (callType === "video") {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-6 font-sans overflow-hidden">
+        {/* Fullscreen Option for Video Call */}
         <button
           onClick={() => setIsFullscreen((prev) => !prev)}
-          className="absolute top-6 right-6 z-[100] p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white cursor-pointer transition-all active:scale-95 shadow-lg"
+          className="absolute top-6 right-6 z-[100] p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white cursor-pointer transition-all active:scale-95 shadow-lg backdrop-blur-md"
           title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
         >
           {isFullscreen ? <FiMinimize2 size={16} /> : <FiMaximize2 size={16} />}
         </button>
-      )}
 
-      {/* Top Section: Peer Info / Connection State */}
-      <div className={topSectionClass}>
-        {callState !== "connected" && (
-          <div className="relative group">
-            {callState === "ringing" && (
-              <div className="absolute inset-0 rounded-full bg-brand-teal/20 scale-125 blur-sm animate-pulse pointer-events-none" />
-            )}
-            <Avatar name={peerUser?.username} size="xxl" showStatus={false} />
+        {/* Floating Info Pill at top-left */}
+        <div className="absolute top-6 left-6 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-3">
+          <Avatar name={peerUser?.username} size="sm" showStatus={false} />
+          <div className="text-left font-sans">
+            <p className="text-xs font-bold text-white leading-none">{peerUser?.name || peerUser?.username}</p>
+            <span className="text-[9px] text-brand-teal font-extrabold flex items-center gap-1.5 mt-1 leading-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              {formatTime(duration)}
+            </span>
           </div>
-        )}
-
-        <div className="space-y-1">
-          <h2 className="text-xl font-extrabold text-white tracking-tight">
-            {peerUser?.name || peerUser?.username}
-          </h2>
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">
-            {callState === "dialing" && "Calling..."}
-            {callState === "ringing" && `Incoming ${callType} Call...`}
-            {callState === "connected" && (
-              <span className="text-brand-teal font-bold flex items-center gap-1.5 justify-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Active ({formatTime(duration)})
-              </span>
-            )}
-          </p>
-          {connectionState && callState === "connected" && (
-            <p className="text-[9px] text-zinc-550 font-bold uppercase tracking-widest mt-0.5">
-              Signal: {connectionState}
-            </p>
-          )}
         </div>
-      </div>
 
-      {/* Center Section: Stream Windows / Audio Dashboard */}
-      <div className={centerSectionClass}>
-        
-        {/* Connected Video UI */}
-        {callState === "connected" && callType === "video" && (
+        {/* Center Section: Main Video View */}
+        <div className={centerSectionClass}>
           <div className="absolute inset-0 w-full h-full">
             {/* Primary Large View */}
             {(isSwapped ? hasLocalFeed : hasRemoteFeed) ? (
@@ -223,9 +280,11 @@ export default function CallOverlay({
                 className={`w-full h-full ${isFullscreen ? "object-contain bg-black" : "object-cover"} ${isSwapped ? "transform -scale-x-100" : ""}`}
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-zinc-550 text-xs bg-black/80">
-                <Avatar name={peerUser?.username} size="xl" showStatus={false} />
-                <p className="mt-3">Waiting for partner camera feed...</p>
+              <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400 text-xs bg-[#121214] space-y-4">
+                <div className="p-1.5 rounded-full bg-white/5 border border-white/10 animate-pulse">
+                  <Avatar name={peerUser?.username} size="xl" showStatus={false} />
+                </div>
+                <p className="font-bold tracking-wide uppercase text-[10px] text-zinc-550">Waiting for camera feed...</p>
               </div>
             )}
 
@@ -238,8 +297,8 @@ export default function CallOverlay({
                 style={{
                   transform: `translate(${position.x}px, ${position.y}px)`,
                 }}
-                className="absolute bottom-4 right-4 w-28 h-36 rounded-xl overflow-hidden border border-white/10 shadow-2xl z-30 bg-[#171717] cursor-grab active:cursor-grabbing select-none touch-none hover:shadow-brand-teal/10 transition-shadow"
-                title="Tap to swap video screens"
+                className="absolute bottom-6 right-6 w-28 h-36 rounded-2xl overflow-hidden border border-white/15 shadow-2xl z-30 bg-[#121214] cursor-grab active:cursor-grabbing select-none touch-none hover:shadow-brand-teal/20 transition-all hover:scale-105"
+                title="Tap to swap screens"
               >
                 <video
                   ref={secondaryVideoRef}
@@ -251,93 +310,114 @@ export default function CallOverlay({
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Connected Audio UI / Ringing Screen */}
-        {(callType === "audio" || callState !== "connected") && (
-          <div className="flex flex-col items-center justify-center space-y-4">
-            {callState === "connected" && (
-              <>
-                <div className="w-24 h-24 rounded-full bg-brand-teal/10 border border-brand-teal/30 flex items-center justify-center animate-pulse">
-                  <FiMic size={36} className="text-brand-teal" />
-                </div>
-                <p className="text-xs text-zinc-400">Audio link established</p>
-              </>
-            )}
-            {callState === "dialing" && (
-              <p className="text-xs text-zinc-550 italic animate-pulse">Waiting for response...</p>
-            )}
-          </div>
+        {/* Floating Bottom Control Bar */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-40 bg-black/60 border border-white/10 backdrop-blur-md px-6 py-4 rounded-3xl flex items-center gap-6 shadow-2xl">
+          <button
+            onClick={handleToggleMic}
+            className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
+              micMuted
+                ? "bg-red-500/20 border-red-500 text-red-500"
+                : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+            }`}
+            title={micMuted ? "Unmute Mic" : "Mute Mic"}
+          >
+            {micMuted ? <FiMicOff size={20} /> : <FiMic size={20} />}
+          </button>
+
+          <button
+            onClick={handleToggleCamera}
+            className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
+              videoOff
+                ? "bg-red-500/20 border-red-500 text-red-500"
+                : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+            }`}
+            title={videoOff ? "Turn Camera On" : "Turn Camera Off"}
+          >
+            {videoOff ? <FiVideoOff size={20} /> : <FiVideo size={20} />}
+          </button>
+
+          <button
+            onClick={onHangUp}
+            className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 active:scale-95 transition-all duration-300 hover:rotate-12"
+            title="Hang Up"
+          >
+            <FiPhoneOff size={20} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Connected Audio Call Screen UI
+  return (
+    <div className="fixed inset-0 z-[9999] bg-[#0F0F10] text-white flex flex-col items-center justify-between p-8 font-sans overflow-hidden select-none">
+      {/* Animated Background Gradients */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-brand-teal/10 blur-3xl animate-pulse" />
+      </div>
+
+      {/* Top Section */}
+      <div className="w-full flex flex-col items-center mt-12 space-y-3 text-center z-10">
+        <span className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-brand-teal bg-brand-teal/10 px-3.5 py-1.5 rounded-full border border-brand-teal/20 shadow-sm">
+          Active Voice Call
+        </span>
+        <h2 className="text-2xl font-extrabold text-white tracking-tight mt-2">
+          {peerUser?.name || peerUser?.username}
+        </h2>
+        <span className="text-xs text-brand-teal font-extrabold flex items-center gap-1.5 justify-center mt-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          {formatTime(duration)}
+        </span>
+        {connectionState && (
+          <p className="text-[9px] text-zinc-550 font-bold uppercase tracking-widest mt-0.5">
+            Signal: {connectionState}
+          </p>
         )}
       </div>
 
-      {/* Bottom Section: Call Controllers */}
-      <div className={bottomSectionClass}>
-        
-        {/* Ringing (Incoming) Mode controls */}
-        {callState === "ringing" && (
-          <>
-            <button
-              onClick={onReject}
-              className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/25 active:scale-95 transition-transform"
-            >
-              <FiPhoneOff size={22} />
-            </button>
-            <button
-              onClick={onAccept}
-              className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-emerald-500/25 active:scale-95 transition-transform"
-            >
-              <FiPhone size={22} />
-            </button>
-          </>
-        )}
+      {/* Center Section: Mic breathing halo */}
+      <div className="flex-1 w-full flex items-center justify-center relative z-10 my-4">
+        <div className="relative flex items-center justify-center">
+          {/* Breathing Rings */}
+          <div className="absolute w-40 h-40 rounded-full bg-brand-teal/5 border border-brand-teal/10 animate-ping opacity-60 pointer-events-none" style={{ animationDuration: "3s" }} />
+          <div className="absolute w-56 h-56 rounded-full border border-brand-teal/5 animate-pulse opacity-40 pointer-events-none" />
 
-        {/* Dialing (Outgoing) Mode controls */}
-        {callState === "dialing" && (
-          <button
-            onClick={onCancel}
-            className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/25 active:scale-95 transition-transform"
-          >
-            <FiPhoneOff size={22} />
-          </button>
-        )}
+          <div className="relative p-1.5 rounded-full bg-gradient-to-tr from-brand-teal to-transparent shadow-2xl shadow-brand-teal/20">
+            <div className="relative">
+              <Avatar name={peerUser?.username} size="xxl" showStatus={false} />
+              {micMuted && (
+                <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-red-500 border-2 border-[#0F0F10] flex items-center justify-center text-white shadow-lg shadow-red-500/30">
+                  <FiMicOff size={14} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Connected Mode controls */}
-        {callState === "connected" && (
-          <>
-            <button
-              onClick={handleToggleMic}
-              className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition border ${
-                micMuted
-                  ? "bg-red-500/20 border-red-500 text-red-500"
-                  : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-              }`}
-            >
-              {micMuted ? <FiMicOff size={22} /> : <FiMic size={22} />}
-            </button>
+      {/* Bottom Section Controls */}
+      <div className="w-full max-w-xs mb-12 flex items-center justify-center gap-8 z-10">
+        <button
+          onClick={handleToggleMic}
+          className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition-all active:scale-95 border ${
+            micMuted
+              ? "bg-red-500/20 border-red-500 text-red-500"
+              : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+          }`}
+          title={micMuted ? "Unmute Mic" : "Mute Mic"}
+        >
+          {micMuted ? <FiMicOff size={22} /> : <FiMic size={22} />}
+        </button>
 
-            {callType === "video" && (
-              <button
-                onClick={handleToggleCamera}
-                className={`w-14 h-14 rounded-full flex items-center justify-center cursor-pointer transition border ${
-                  videoOff
-                    ? "bg-red-500/20 border-red-500 text-red-500"
-                    : "bg-white/5 border-white/10 text-white hover:bg-white/10"
-              }`}
-              >
-                {videoOff ? <FiVideoOff size={22} /> : <FiVideo size={22} />}
-              </button>
-            )}
-
-            <button
-              onClick={onHangUp}
-              className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/25 active:scale-95 transition-transform"
-            >
-              <FiPhoneOff size={22} />
-            </button>
-          </>
-        )}
-
+        <button
+          onClick={onHangUp}
+          className="w-14 h-14 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer shadow-lg shadow-red-500/30 active:scale-95 transition-all duration-300 hover:rotate-12"
+          title="Hang Up"
+        >
+          <FiPhoneOff size={22} />
+        </button>
       </div>
     </div>
   );
