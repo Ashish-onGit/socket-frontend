@@ -343,14 +343,14 @@ export function ContactsSidebar({ onlineUsers }) {
       </div>
 
       <div className="p-4 flex-1 flex flex-col min-h-0">
-        <div className="relative mb-4">
-          <FiSearch className="absolute left-3 top-2.5 text-gray-400" size={13} />
+        <div className="relative flex items-center mb-4">
+          <FiSearch className="absolute left-3.5 text-gray-400" size={14} />
           <input
             type="text"
             placeholder="Search contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full py-1.5 pl-8 pr-4 text-[10px] rounded-xl bg-brand-bg-light dark:bg-zinc-800 border border-transparent focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+            className="w-full py-2.5 pl-10 pr-4 text-[11px] rounded-2xl bg-brand-bg-light dark:bg-zinc-800/80 border border-transparent focus:border-brand-teal/50 focus:bg-white dark:focus:bg-zinc-800 focus:ring-4 focus:ring-brand-teal/10 focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
           />
         </div>
 
