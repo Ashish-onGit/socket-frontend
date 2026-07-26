@@ -170,8 +170,36 @@ const MessageItem = React.memo(
                 )}
               </div>
 
-              {/* Checkmarks inside bubble */}
-              {fromSelf && !msg.deleted && (
+              {/* Bubble Footer / Copy & Checkmarks */}
+              {!msg.deleted && msg.message && (
+                <div className="flex items-center justify-between gap-3 mt-1.5 text-[9px] opacity-50 dark:opacity-45 font-sans select-none border-t border-black/5 dark:border-white/5 pt-1.5">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCopy(msg);
+                    }}
+                    className={`flex items-center gap-1 hover:opacity-100 transition-opacity cursor-pointer ${fromSelf ? 'text-white' : 'text-gray-500 dark:text-zinc-455 hover:text-brand-teal'}`}
+                    title="Copy text"
+                  >
+                    <FiCopy size={9} />
+                    <span>Copy</span>
+                  </button>
+                  
+                  <div className="flex items-center gap-1.5">
+                    {msg.edited && <span>edited</span>}
+                    {fromSelf && (
+                      msg.read ? (
+                        <FiCheckSquare size={10} />
+                      ) : (
+                        <FiCheck size={10} />
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Checkmarks fallback for non-text/deleted messages */}
+              {fromSelf && !msg.deleted && !msg.message && (
                 <div className="flex items-center justify-end gap-1 mt-1 text-[9px] opacity-50 font-sans">
                   {msg.edited && <span>edited</span>}
                   {msg.read ? (
