@@ -6,7 +6,8 @@ import {
   FiPhone, FiSend, FiPaperclip, FiSmile, FiVolume2, FiVolumeX, FiPlus, FiPhoneCall,
   FiPhoneMissed, FiArrowUpRight, FiArrowDownLeft, FiClock, FiActivity, FiMessageSquare,
   FiDatabase, FiMaximize2, FiShare2, FiChevronLeft, FiSave, FiLogOut, FiSliders,
-  FiGrid, FiList, FiTrendingUp, FiUser, FiInfo, FiMoon, FiShield, FiBell, FiWifi, FiCheckCircle, FiEdit2
+  FiGrid, FiList, FiTrendingUp, FiUser, FiInfo, FiMoon, FiShield, FiBell, FiWifi, FiCheckCircle, FiEdit2,
+  FiKey, FiCopy
 } from "react-icons/fi";
 import { BsPinAngleFill, BsGrid, BsList } from "react-icons/bs";
 import Avatar from "../common/Avatar";
@@ -402,6 +403,7 @@ export function ContactsSidebar({ onlineUsers }) {
 export function ContactsMainArea({ onlineUsers = [], onInitiateCall }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   const currentUser = useSelector((state) => state.auth.user);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -478,64 +480,141 @@ export function ContactsMainArea({ onlineUsers = [], onInitiateCall }) {
         onMobileBack={() => navigate("/contacts")}
       />
 
-      <div className="flex-1 flex items-center justify-center p-8 overflow-y-auto custom-scrollbar">
-        <div className="max-w-sm w-full bg-white dark:bg-brand-card-dark p-8 rounded-3xl border border-brand-border-light dark:border-white/5 shadow-md text-center space-y-6">
+      <div className="flex-1 flex items-center justify-center p-6 md:p-8 overflow-y-auto custom-scrollbar relative">
+        {/* Modern Blurred Mesh Backdrop (Glassmorphic Accent Overlay) */}
+        <div className="absolute top-0 inset-x-0 h-40 pointer-events-none overflow-hidden opacity-30 dark:opacity-20 select-none">
+          <div className={`w-[250px] h-[250px] rounded-full blur-3xl mx-auto -mt-20 ${
+            selectedUser === "Ashish" 
+              ? "bg-amber-500" 
+              : selectedUser === "Gauri" 
+                ? "bg-brand-teal" 
+                : "bg-purple-500"
+          }`} />
+        </div>
+
+        {/* Premium Glassmorphic Card Container */}
+        <div className="max-w-md w-full bg-white/75 dark:bg-[#080808]/85 border border-brand-border-light dark:border-white/5 backdrop-blur-lg p-8 rounded-[2rem] shadow-2xl flex flex-col space-y-6 z-10 transition-all select-none">
+          
+          {/* Top Profile Header (Avatar and Badges) */}
           <div className="flex flex-col items-center">
-            <Avatar name={selectedUser} size="xxl" isOnline={isUserOnline} showStatus={true} />
-            <h3 className="text-sm font-bold text-gray-800 dark:text-white mt-4">{profileUser?.name || selectedUser}</h3>
-            <span className="text-[9px] bg-brand-teal/15 text-brand-teal font-extrabold px-3 py-0.5 rounded-full mt-2 uppercase tracking-wider">
-              {selectedUser === "Ashish" ? "Admin" : selectedUser === "Gauri" ? "Moderator" : "Member"}
+            {/* Glowing avatar backing aligned to online status */}
+            <div className="relative group">
+              <div className={`absolute -inset-1 rounded-full blur-lg opacity-40 group-hover:opacity-70 transition duration-500 ${isUserOnline ? 'bg-emerald-500' : 'bg-zinc-500'}`} />
+              <div className="relative p-1 rounded-full bg-white dark:bg-brand-panel-dark">
+                <Avatar name={selectedUser} size="xxl" isOnline={isUserOnline} showStatus={true} />
+              </div>
+            </div>
+            
+            <h3 className="text-base font-extrabold text-gray-800 dark:text-white mt-4 font-sans tracking-tight leading-none">
+              {profileUser?.name || selectedUser}
+            </h3>
+            <p className="text-[10px] text-gray-400 dark:text-zinc-500 font-sans mt-1.5">
+              @{selectedUser}
+            </p>
+            
+            {/* Role Badge */}
+            <span className={`text-[9px] font-extrabold px-3 py-1 rounded-full mt-3 uppercase tracking-wider border shadow-sm ${
+              selectedUser === "Ashish" 
+                ? "bg-amber-500/10 text-amber-500 border-amber-500/20" 
+                : selectedUser === "Gauri" 
+                  ? "bg-brand-teal/10 text-brand-teal border-brand-teal/20" 
+                  : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+            }`}>
+              {selectedUser === "Ashish" ? "Administrator" : selectedUser === "Gauri" ? "Moderator" : "Member"}
             </span>
           </div>
 
-          <div className="border-t border-b border-gray-100 dark:border-white/5 py-4 space-y-3 font-sans text-[11px]">
-            <div className="flex justify-between pl-2 pr-2">
-              <span className="text-gray-400 font-medium">Timezone</span>
-              <span className="font-semibold text-gray-800 dark:text-gray-200">IST (UTC+5:30)</span>
+          {/* Details Section */}
+          <div className="border-t border-b border-gray-100 dark:border-white/5 py-5 space-y-4 font-sans text-xs">
+            
+            {/* Timezone */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 select-none">
+                <FiClock size={13} className="text-gray-400" />
+                <span className="font-medium text-[11px]">Timezone</span>
+              </div>
+              <span className="font-bold text-gray-800 dark:text-zinc-200">IST (UTC+5:30)</span>
             </div>
-            <div className="flex justify-between pl-2 pr-2">
-              <span className="text-gray-400 font-medium">Bio Status</span>
-              <span className="font-semibold text-gray-800 dark:text-gray-200 italic max-w-[160px] truncate">
+
+            {/* Bio Status */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 select-none">
+                <FiInfo size={13} className="text-gray-400" />
+                <span className="font-medium text-[11px]">Bio Status</span>
+              </div>
+              <span className="font-bold text-gray-800 dark:text-zinc-200 italic max-w-[160px] truncate" title={profileUser?.bio}>
                 {profileUser?.bio || "Hey there! I am using SocketChat."}
               </span>
             </div>
-            <div className="flex justify-between pl-2 pr-2">
-              <span className="text-gray-400 font-medium">Call ID</span>
-              <span className="font-mono font-bold text-brand-teal select-all cursor-pointer" title="Select and copy ID">
-                {profileUser?.uniqueId || "••••••••"}
-              </span>
+
+            {/* Call ID with easy copying */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 select-none">
+                <FiKey size={13} className="text-gray-400" />
+                <span className="font-medium text-[11px]">Call ID</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono font-bold text-brand-teal select-text cursor-pointer hover:underline" title="Call ID">
+                  {profileUser?.uniqueId || "••••••••"}
+                </span>
+                {profileUser?.uniqueId && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(profileUser.uniqueId);
+                      showToast("Call ID copied!", "success");
+                    }}
+                    className="p-1 rounded-md text-gray-400 dark:text-zinc-500 hover:text-brand-teal dark:hover:text-brand-teal hover:bg-brand-teal/10 transition cursor-pointer flex items-center justify-center"
+                    title="Copy Call ID"
+                  >
+                    <FiCopy size={11} />
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="flex justify-between pl-2 pr-2">
-              <span className="text-gray-400 font-medium">Status</span>
-              <span className={`font-bold ${isUserOnline ? "text-emerald-500" : "text-gray-400"}`}>
+
+            {/* Status */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2 text-gray-400 dark:text-zinc-500 select-none">
+                <FiActivity size={13} className="text-gray-400" />
+                <span className="font-medium text-[11px]">Presence</span>
+              </div>
+              <span className={`font-bold uppercase tracking-wider text-[10px] ${isUserOnline ? "text-emerald-500" : "text-zinc-400"}`}>
                 {isUserOnline ? "Available" : "Offline"}
               </span>
             </div>
+
           </div>
 
-          <div className="flex justify-center gap-3 pt-2">
+          {/* Action Buttons Section */}
+          <div className="flex flex-col gap-3 pt-2">
+            {/* Primary Button: Message */}
             <button 
               onClick={startPrivateChat}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 rounded-xl transition shadow-sm cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-white bg-brand-teal hover:bg-brand-teal/95 hover:shadow-md hover:shadow-brand-teal/20 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
             >
-              <FiMessageSquare size={13} />
-              Message
+              <FiMessageSquare size={14} />
+              <span>Send Private Message</span>
             </button>
-            <button 
-              onClick={() => handleStartCall("audio")}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-xl transition cursor-pointer"
-            >
-              <FiPhone size={13} />
-              Voice Call
-            </button>
-            <button 
-              onClick={() => handleStartCall("video")}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 text-[10px] font-bold text-white bg-purple-650 hover:bg-purple-700 rounded-xl transition cursor-pointer shadow-sm"
-            >
-              <FiVideo size={13} />
-              Video Call
-            </button>
+
+            {/* Secondary Row: Voice & Video calls */}
+            <div className="grid grid-cols-2 gap-3 w-full">
+              <button 
+                onClick={() => handleStartCall("audio")}
+                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-gray-700 dark:text-zinc-200 bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200/50 dark:border-white/5 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
+              >
+                <FiPhone size={14} />
+                <span>Voice Call</span>
+              </button>
+              <button 
+                onClick={() => handleStartCall("video")}
+                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 hover:shadow-md hover:shadow-purple-500/20 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
+              >
+                <FiVideo size={14} />
+                <span>Video Call</span>
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
