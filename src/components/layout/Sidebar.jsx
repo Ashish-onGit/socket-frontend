@@ -60,10 +60,10 @@ const ConversationItem = React.memo(({
 
   return (
     <div
-      className={`group flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer relative hover:z-30 focus-within:z-30 ${
+      className={`group flex items-center justify-between p-3.5 my-1 rounded-[20px] transition-all duration-200 cursor-pointer relative hover:z-30 focus-within:z-30 border ${
         isActive
-          ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20"
-          : "hover:bg-gray-100 dark:hover:bg-white/5"
+          ? "bg-white dark:bg-[#0E1117]/95 border-slate-200 dark:border-[rgba(255,255,255,0.15)] shadow-sm text-slate-900 dark:text-white"
+          : "bg-transparent border-transparent hover:bg-slate-200/60 dark:hover:bg-[#0E1117]/60 hover:border-slate-200 dark:hover:border-[rgba(255,255,255,0.08)]"
       }`}
       onClick={onSelect}
       onContextMenu={handleContextMenu}
@@ -73,19 +73,22 @@ const ConversationItem = React.memo(({
       onTouchCancel={handleTouchEnd}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
+        {isActive && (
+          <span className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#0D9488] rounded-r-full shadow-none" />
+        )}
         <Avatar name={chat.username} size="md" isOnline={chat.isOnline} />
         <div className="min-w-0 flex-1 font-sans">
           <div className="flex items-center justify-between">
-            <span className={`text-[13px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
+            <span className={`text-[13px] font-extrabold truncate ${isActive ? "text-slate-900 dark:text-white" : "text-gray-800 dark:text-gray-100"}`}>
               {chat.recipient?.name || chat.username}
             </span>
-            <span className={`text-[10px] ${isActive ? "text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
+            <span className={`text-[10px] ${isActive ? "text-slate-600 dark:text-white/80" : "text-gray-400 dark:text-gray-500"}`}>
               {getRelativeTime(chat.lastMsg?.timestamp)}
             </span>
           </div>
 
           <div className="flex items-center justify-between mt-1">
-            <p className={`text-[11px] truncate max-w-[155px] ${isActive ? "text-white/90" : "text-gray-500 dark:text-gray-450"}`}>
+            <p className={`text-[11px] truncate max-w-[155px] ${isActive ? "text-slate-700 dark:text-white/90" : "text-gray-500 dark:text-gray-450"}`}>
               {chat.lastMsg ? (
                 chat.lastMsg.deleted ? (
                   <span className="italic opacity-85">Message deleted</span>
@@ -99,13 +102,13 @@ const ConversationItem = React.memo(({
 
             <div className="flex items-center gap-1.5 flex-shrink-0 ml-1">
               {chat.isMuted && (
-                <FiVolumeX size={10} className={isActive ? "text-white" : "text-gray-450 dark:text-zinc-500"} />
+                <FiVolumeX size={10} className={isActive ? "text-slate-900 dark:text-white" : "text-gray-450 dark:text-zinc-500"} />
               )}
               {chat.isPinned && (
-                <BsPinAngleFill size={11} className={isActive ? "text-white" : "text-brand-teal"} />
+                <BsPinAngleFill size={11} className={isActive ? "text-slate-900 dark:text-white" : "text-brand-teal"} />
               )}
               {chat.unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-[9.5px] font-bold px-1.5 py-0.5 rounded-full min-w-[16px] text-center">
+                <span className="bg-[#0D9488] text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full min-w-[18px] text-center shadow-none">
                   {chat.unreadCount}
                 </span>
               )}
@@ -118,7 +121,7 @@ const ConversationItem = React.memo(({
       <div className="ml-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
         <Dropdown
           trigger={
-            <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors opacity-75 hover:opacity-100 ${isActive ? "text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
+            <button className={`p-1 z-50 rounded-lg hover:bg-black/10 transition-colors opacity-75 hover:opacity-100 ${isActive ? "text-slate-900 dark:text-white" : "text-gray-400 hover:text-gray-700"} flex items-center justify-center`}>
               <FiChevronDown size={14} />
             </button>
           }
@@ -258,15 +261,15 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
   };
 
   return (
-    <div className="flex flex-col bg-white dark:bg-brand-panel-dark border-b border-brand-border-light dark:border-white/5">
+    <div className="flex flex-col bg-slate-100/90 dark:bg-[#0E1117]/90 backdrop-blur-md border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)]">
       {/* Panel Header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <span className="text-[10px] font-extrabold text-gray-500 dark:text-zinc-400 uppercase tracking-widest">
+        <span className="text-[10px] font-extrabold text-slate-700 dark:text-zinc-300 uppercase tracking-widest">
           New Conversation
         </span>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition cursor-pointer"
+          className="p-1 rounded-lg text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition cursor-pointer"
         >
           <FiX size={13} />
         </button>
@@ -276,9 +279,9 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
       <div className="px-3 pb-2">
         <div className="relative flex items-center">
           {loading ? (
-            <FiLoader size={13} className="absolute left-3 text-brand-teal animate-spin" />
+            <FiLoader size={13} className="absolute left-3 text-[#00E5B0] animate-spin" />
           ) : (
-            <FiSearch size={13} className="absolute left-3 text-gray-400" />
+            <FiSearch size={13} className="absolute left-3 text-zinc-500" />
           )}
           <input
             ref={inputRef}
@@ -286,7 +289,7 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
             placeholder="Search by name or username..."
             value={query}
             onChange={handleQueryChange}
-            className="w-full py-2 pl-8 pr-4 text-[11px] rounded-xl bg-brand-bg-light dark:bg-zinc-800 border border-transparent focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+            className="w-full py-2 pl-8 pr-4 text-[11px] rounded-[14px] bg-white dark:bg-[#0E1117] border border-slate-300 dark:border-[rgba(255,255,255,0.08)] focus:border-[#0D9488]/60 focus:outline-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 transition-all font-sans"
           />
         </div>
         {error && (
@@ -298,11 +301,11 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
       <div className="max-h-64 overflow-y-auto custom-scrollbar px-2 pb-3">
         {!loading && results.length === 0 && (
           <div className="flex flex-col items-center justify-center py-6 text-center">
-            <FiUsers size={24} className="text-gray-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500">
+            <FiUsers size={24} className="text-zinc-600 mb-2" />
+            <p className="text-[10px] font-bold text-zinc-400">
               {query.trim() ? `No users found for "${query}"` : "No users registered yet"}
             </p>
-            <p className="text-[9px] text-gray-300 dark:text-zinc-600 mt-0.5">
+            <p className="text-[9px] text-zinc-500 mt-0.5">
               Try a different search term
             </p>
           </div>
@@ -318,24 +321,24 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
               key={user._id}
               onClick={() => handleSelectUser(user)}
               disabled={isStarting}
-              className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-brand-teal/5 dark:hover:bg-white/5 transition cursor-pointer group text-left disabled:opacity-60"
+              className="w-full flex items-center gap-3 p-2.5 rounded-[16px] hover:bg-slate-200/60 dark:hover:bg-white/5 border border-transparent hover:border-slate-300 dark:hover:border-[rgba(255,255,255,0.08)] transition-all cursor-pointer group text-left disabled:opacity-60"
             >
               <div className="flex-shrink-0">
                 <Avatar name={user.username} size="md" isOnline={isOnline} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold text-gray-800 dark:text-gray-100 truncate">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
                   {user.name || user.username}
                 </p>
-                <p className="text-[9px] text-gray-400 dark:text-zinc-500 truncate">
+                <p className="text-[9px] text-zinc-500 truncate">
                   @{user.username} {user.uniqueId && `• Call ID: ${user.uniqueId}`}
                   {isOnline ? (
-                    <span className="ml-1.5 inline-flex items-center gap-0.5 text-emerald-500">
-                      <span className="w-1 h-1 rounded-full bg-emerald-500 inline-block" />
+                    <span className="ml-1.5 inline-flex items-center gap-0.5 text-[#00E5B0]">
+                      <span className="w-1 h-1 rounded-full bg-[#00E5B0] inline-block" />
                       Online
                     </span>
                   ) : user.updatedAt ? (
-                    <span className="ml-1.5 text-gray-300 dark:text-zinc-600">
+                    <span className="ml-1.5 text-zinc-600">
                       · last seen {new Date(user.updatedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                     </span>
                   ) : null}
@@ -343,13 +346,13 @@ function NewChatPanel({ currentUser, onlineUsers, conversations, onClose, onStar
               </div>
               <div className="flex-shrink-0">
                 {isStarting ? (
-                  <FiLoader size={13} className="text-brand-teal animate-spin" />
+                  <FiLoader size={13} className="text-[#00E5B0] animate-spin" />
                 ) : alreadyExists ? (
-                  <span className="text-[9px] font-bold text-brand-teal bg-brand-teal/10 px-2 py-0.5 rounded-full">
+                  <span className="text-[9px] font-bold text-[#00E5B0] bg-[#00E5B0]/15 px-2 py-0.5 rounded-full border border-[#00E5B0]/30">
                     Open
                   </span>
                 ) : (
-                  <span className="text-[9px] font-bold text-gray-400 group-hover:text-brand-teal transition px-2 py-0.5 rounded-full group-hover:bg-brand-teal/10">
+                  <span className="text-[9px] font-bold text-zinc-400 group-hover:text-[#00E5B0] transition px-2 py-0.5 rounded-full group-hover:bg-[#00E5B0]/10">
                     <FiMessageSquare size={11} />
                   </span>
                 )}
@@ -372,6 +375,13 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewChat, setShowNewChat] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setShowNewChat(true);
+    window.addEventListener("open-new-chat", handler);
+    return () => window.removeEventListener("open-new-chat", handler);
+  }, []);
+
   const [confirmDeleteChat, setConfirmDeleteChat] = useState(null);
   const [contextMenu, setContextMenu] = useState({
     isOpen: false,
@@ -505,9 +515,9 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark relative z-10 select-none">
+    <div className="w-full h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] relative z-10 select-none">
       {/* Sidebar Header */}
-      <div className="h-16 px-6 flex items-center justify-between border-b border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-panel-dark select-none flex-shrink-0">
+      <div className="h-16 px-6 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-transparent select-none flex-shrink-0">
         <div className="flex items-center gap-2">
           {showArchived && (
             <button
@@ -519,7 +529,7 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
             </button>
           )}
           <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase font-sans">
-            {showArchived ? "Archived" : "Conversations"}
+            {showArchived ? "Archived" : "Chats"}
           </span>
         </div>
 
@@ -558,7 +568,7 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
       </div>
 
       {/* Profile row */}
-      <div className="px-4 py-3 flex items-center gap-3 border-b border-brand-border-light dark:border-white/5">
+      <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-slate-100/60 dark:bg-[#0E1117]/40">
         <Avatar name={currentUser?.username} size="sm" isOnline={isConnected} showStatus={true} />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-gray-800 dark:text-gray-100 truncate font-sans">{currentUser?.username}</p>
@@ -580,7 +590,7 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2.5 pl-10 pr-10 text-xs rounded-2xl bg-brand-bg-light dark:bg-zinc-800/80 border border-transparent focus:border-brand-teal/50 focus:bg-white dark:focus:bg-zinc-800 focus:ring-4 focus:ring-brand-teal/10 focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+            className="w-full py-2.5 pl-10 pr-10 text-xs rounded-[16px] bg-white dark:bg-[#0E1117]/80 border border-slate-300 dark:border-[rgba(255,255,255,0.08)] focus:border-slate-400 dark:focus:border-zinc-500/50 focus:bg-white dark:focus:bg-[#0E1117] focus:outline-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 transition-all font-sans"
           />
           <button className="absolute right-3.5 text-gray-400 hover:text-gray-600 cursor-pointer">
             <FiSliders size={13} />
@@ -590,10 +600,10 @@ export default function Sidebar({ theme, toggleTheme, onlineUsers = [], isConnec
         {!showArchived && (
           <button
             onClick={() => setShowNewChat((v) => !v)}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold rounded-xl transition border cursor-pointer ${
+            className={`w-full flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold rounded-[16px] transition-all duration-200 border cursor-pointer ${
               showNewChat
-                ? "text-white bg-brand-teal border-brand-teal shadow-md shadow-brand-teal/20"
-                : "text-brand-teal bg-brand-teal/5 hover:bg-brand-teal/10 border-dashed border-brand-teal/20"
+                ? "text-white bg-zinc-700 border-transparent"
+                : "text-white bg-[#0D9488] hover:bg-[#0F766E] border-transparent"
             }`}
           >
             {showNewChat ? <FiX size={13} /> : <FiPlus size={13} />}

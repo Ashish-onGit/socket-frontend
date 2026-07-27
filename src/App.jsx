@@ -163,7 +163,7 @@ function App() {
   const toggleTheme = () => {
     const nextTheme = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
-    showToast(`Theme changed to ${nextTheme === "dark" ? "Dark" : "Light"}`, "info");
+    // showToast(`Theme changed to ${nextTheme === "dark" ? "Dark" : "Light"}`, "info");
   };
 
   const handleLogin = async (username, pass) => {

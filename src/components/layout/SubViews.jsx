@@ -22,7 +22,7 @@ import CallHistoryList from "../calling/CallHistoryList";
 // ==========================================
 export function UnifiedHeader({ title, subtitle, search, actions, showMobileBack, onMobileBack }) {
   return (
-    <div className="h-16 px-6 border-b border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-panel-dark flex items-center justify-between z-10 flex-shrink-0 select-none">
+    <div className="h-16 px-6 border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl flex items-center justify-between z-10 flex-shrink-0 select-none">
       <div className="flex items-center gap-3 min-w-0">
         {showMobileBack && (
           <button 
@@ -76,8 +76,8 @@ export function FilesSidebar({ onCategorySelect }) {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
-      <div className="h-16 px-4 flex items-center justify-between border-b border-brand-border-light dark:border-white/5">
+    <div className="w-full h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] font-sans">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)]">
         <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase">Files Cabinet</span>
         <span className="text-[9px] bg-brand-teal/10 text-brand-teal px-2 py-0.5 rounded-full font-bold">Cabinet</span>
       </div>
@@ -116,7 +116,7 @@ export function FilesMainArea() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
+    <div className="flex-1 h-full flex flex-col bg-slate-50 dark:bg-[#050505] relative overflow-hidden font-sans select-none">
       <UnifiedHeader 
         title="Files Cabinet" 
         subtitle="Shared documents and attachments locker"
@@ -124,60 +124,36 @@ export function FilesMainArea() {
         onMobileBack={() => navigate("/files")}
       />
 
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto custom-scrollbar">
-        {/* Glassmorphic Card */}
-        <div className="w-full max-w-xl bg-white/60 dark:bg-brand-card-dark/60 backdrop-blur-xl border border-brand-border-light dark:border-white/5 rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
-          {/* Decorative ambient glow */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-brand-teal/10 blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-cyan-500/10 blur-2xl pointer-events-none" />
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md bg-white dark:bg-[#0E1117] border border-slate-200 dark:border-[rgba(255,255,255,0.08)] rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none" />
 
-          {/* Premium Icon Badge */}
-          <div className="relative mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-teal to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-brand-teal/20 animate-pulse-slow">
-              <FiFileText size={38} />
-            </div>
-            <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white font-extrabold text-[8px] uppercase tracking-widest shadow-md">
-              Coming Soon
-            </span>
+          {/* Sleek Icon */}
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-zinc-200 flex items-center justify-center mb-6 shadow-xs">
+            <FiFileText size={28} />
           </div>
 
+          {/* Status Badge */}
+          <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 text-[10px] font-extrabold uppercase tracking-widest mb-4">
+            Under Development
+          </span>
+
           {/* Title */}
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white uppercase tracking-wider mb-2 font-sans">
-            Files
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-2 font-sans">
+            Files Cabinet
           </h2>
 
-          {/* Subtitle */}
-          <p className="text-xs text-brand-teal dark:text-teal-400 font-bold uppercase tracking-widest mb-4">
-            This section is currently under development
+          {/* Description */}
+          <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed max-w-xs mb-8 font-sans">
+            We're currently building a centralized document locker to track, search, and manage all files shared across your workspaces.
           </p>
 
-          <p className="text-[11px] text-gray-400 dark:text-zinc-500 max-w-sm mb-8 leading-relaxed font-sans">
-            A secure hub to keep track of all files, documents, and media shared across your workspaces and individual chats.
-          </p>
-
-          {/* Features Checklist Card */}
-          <div className="w-full bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-100/55 dark:border-white/5 rounded-2xl p-5 text-left space-y-4">
-            <h4 className="text-[9.5px] font-extrabold text-gray-555 dark:text-zinc-400 uppercase tracking-widest">
-              Soon you'll be able to:
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { title: "Upload Files", desc: "Upload docs directly from your device." },
-                { title: "Share Documents", desc: "Send sheets, PDFs, and media instantly." },
-                { title: "Organize Attachments", desc: "Group attachments by type or sender." },
-                { title: "Search Shared Files", desc: "Instantly locate items by keyword or filter." }
-              ].map((feat, idx) => (
-                <div key={idx} className="flex gap-2.5 items-start">
-                  <span className="w-5 h-5 rounded-full bg-brand-teal/10 text-brand-teal flex items-center justify-center flex-shrink-0 mt-0.5 text-[9px] font-bold">
-                    ✓
-                  </span>
-                  <div>
-                    <h5 className="text-[11px] font-bold text-gray-800 dark:text-gray-50">{feat.title}</h5>
-                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">{feat.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Bottom Footer Note */}
+          <div className="w-full pt-6 border-t border-slate-100 dark:border-white/5 flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+            <span>Arriving in the next update</span>
           </div>
         </div>
       </div>
@@ -198,35 +174,40 @@ export function ChannelsSidebar() {
     { name: "#general", desc: "Company wide chatter" },
     { name: "#announcements", desc: "Corporate updates" },
     { name: "#dev-talk", desc: "Coding and support" },
-    { name: "#design-feedback", desc: "Visual review logs" }
+    { name: "#design-hub", desc: "UI/UX prototypes" },
+    { name: "#random", desc: "Watercooler discussions" },
   ];
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
-      <div className="h-16 px-4 flex items-center justify-between border-b border-brand-border-light dark:border-white/5">
-        <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase">Channels</span>
-        <button className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-brand-teal cursor-pointer">
-          <FiPlus size={14} />
-        </button>
-      </div>
+    <div className="w-full md:w-80 h-full flex flex-col bg-slate-50 dark:bg-[#0B0F14] border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] flex-shrink-0 select-none font-sans">
+      <UnifiedHeader title="Channels" subtitle="Public & Private Groups" />
 
-      <div className="p-4 space-y-1 flex-1 overflow-y-auto custom-scrollbar">
-        <span className="text-[9px] font-extrabold text-gray-400 dark:text-zinc-500 uppercase tracking-widest block mb-3">Group Channels</span>
-        {channels.map((chan) => {
-          const isActive = activeChannel === chan.name;
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1.5">
+        <div className="px-3 py-2 text-[10px] font-extrabold text-slate-400 dark:text-zinc-500 uppercase tracking-widest">
+          Available Channels
+        </div>
+        {channels.map((ch) => {
+          const isActive = activeChannel === ch.name;
           return (
-              <button
-              key={chan.name}
-              onClick={() => navigate(`/channels?name=${encodeURIComponent(chan.name)}`)}
-              className={`w-full text-left p-3 rounded-xl transition cursor-pointer flex justify-between items-center ${
-                isActive ? "bg-brand-teal text-white shadow-md shadow-brand-teal/20" : "hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200"
+            <div
+              key={ch.name}
+              onClick={() => navigate(`/channels?name=${encodeURIComponent(ch.name)}`)}
+              className={`p-3.5 rounded-2xl transition-all cursor-pointer flex items-center justify-between group ${
+                isActive
+                  ? "bg-teal-600 text-white shadow-sm"
+                  : "hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/5 text-slate-700 dark:text-zinc-200"
               }`}
             >
-              <div className="min-w-0 flex-1 mr-2">
-                <p className={`text-[11px] font-bold ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>{chan.name}</p>
-                <p className={`text-[9px] ${isActive ? "text-white/85" : "text-gray-400 dark:text-zinc-500"} mt-0.5 truncate`}>{chan.desc}</p>
+              <div>
+                <h4 className={`text-[12px] font-extrabold ${isActive ? "text-white" : "text-slate-900 dark:text-white"}`}>
+                  {ch.name}
+                </h4>
+                <p className={`text-[9.5px] mt-0.5 ${isActive ? "text-white/80" : "text-slate-500 dark:text-zinc-400"}`}>
+                  {ch.desc}
+                </p>
               </div>
-            </button>
+              <FiChevronRight className={`text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-transform group-hover:translate-x-0.5 ${isActive ? "text-white" : ""}`} size={16} />
+            </div>
           );
         })}
       </div>
@@ -238,65 +219,44 @@ export function ChannelsMainArea() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden font-sans">
+    <div className="flex-1 h-full flex flex-col bg-slate-50 dark:bg-[#050505] relative overflow-hidden font-sans select-none">
       <UnifiedHeader 
-        title="Channels Hub"
+        title="Channels Hub" 
         subtitle="Dedicated communication spaces for teams"
         showMobileBack={true}
         onMobileBack={() => navigate("/channels")}
       />
 
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 overflow-y-auto custom-scrollbar">
-        {/* Modern Placeholder Container */}
-        <div className="w-full max-w-2xl bg-white/60 dark:bg-brand-card-dark/60 backdrop-blur-xl border border-brand-border-light dark:border-white/5 rounded-3xl p-8 sm:p-10 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
-          {/* Ambient Glows */}
-          <div className="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-purple-500/10 blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-36 h-36 rounded-full bg-brand-teal/10 blur-2xl pointer-events-none" />
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md bg-white dark:bg-[#0E1117] border border-slate-200 dark:border-[rgba(255,255,255,0.08)] rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-teal-500/10 blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none" />
 
-          {/* Icon Badge */}
-          <div className="relative mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 animate-pulse-slow">
-              <FiUsers size={38} />
-            </div>
-            <span className="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-brand-teal text-white font-extrabold text-[8px] uppercase tracking-widest shadow-md">
-              Coming Soon
-            </span>
+          {/* Sleek Icon */}
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-zinc-200 flex items-center justify-center mb-6 shadow-xs">
+            <FiUsers size={28} />
           </div>
 
+          {/* Status Badge */}
+          <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 text-[10px] font-extrabold uppercase tracking-widest mb-4">
+            Under Development
+          </span>
+
           {/* Title */}
-          <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white uppercase tracking-wider mb-2">
-            Channels
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white uppercase tracking-wider mb-2 font-sans">
+            Channels Hub
           </h2>
 
-          {/* Subtitle */}
-          <p className="text-xs text-indigo-500 dark:text-indigo-400 font-extrabold uppercase tracking-widest mb-4">
-            Under Development
+          {/* Description */}
+          <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed max-w-xs mb-8 font-sans">
+            We're currently building dedicated communication channels to organize your team discussions by topics and projects.
           </p>
 
-          <p className="text-[11px] text-gray-400 dark:text-zinc-500 max-w-md mb-8 leading-relaxed">
-            Channels will allow communities and teams to communicate in dedicated spaces. Organize discussions by projects, topics, departments, or interests.
-          </p>
-
-          {/* Features Grid */}
-          <div className="w-full bg-gray-50/50 dark:bg-zinc-800/40 border border-gray-100/55 dark:border-white/5 rounded-2xl p-5 text-left">
-            <h4 className="text-[9.5px] font-extrabold text-gray-500 dark:text-zinc-400 uppercase tracking-widest mb-4">
-              Features Coming Soon
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {[
-                { title: "Public Channels", desc: "Open spaces for anyone in the company to join and contribute." },
-                { title: "Private Channels", desc: "Invite-only spaces for secure and sensitive conversations." },
-                { title: "Threaded Conversations", desc: "Keep discussions organized by replying directly to messages." },
-                { title: "Channel Permissions", desc: "Granular roles to manage who can view, post, or edit messages." },
-                { title: "Mentions & Alerts", desc: "Notify team members instantly with @mentions and ping updates." },
-                { title: "File Sharing & Pins", desc: "Share project documents and pin important resources." }
-              ].map((feat, idx) => (
-                <div key={idx} className="p-3 bg-white dark:bg-zinc-900/40 rounded-xl border border-gray-100 dark:border-white/5 hover:scale-[1.02] transition-transform">
-                  <h5 className="text-[10px] font-bold text-gray-800 dark:text-gray-150 uppercase tracking-wide">{feat.title}</h5>
-                  <p className="text-[9px] text-gray-450 dark:text-zinc-500 mt-1 leading-normal">{feat.desc}</p>
-                </div>
-              ))}
-            </div>
+          {/* Bottom Footer Note */}
+          <div className="w-full pt-6 border-t border-slate-100 dark:border-white/5 flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+            <span>Arriving in the next update</span>
           </div>
         </div>
       </div>
@@ -338,8 +298,8 @@ export function ContactsSidebar({ onlineUsers }) {
   }, [search, currentUser?.token]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
-      <div className="h-16 px-4 flex items-center justify-between border-b border-brand-border-light dark:border-white/5">
+    <div className="w-full h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] font-sans">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)]">
         <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase">Contacts</span>
       </div>
 
@@ -369,23 +329,23 @@ export function ContactsSidebar({ onlineUsers }) {
                   onClick={() => navigate(`/contacts?username=${usr.username}`)}
                   className={`flex items-center justify-between p-3 my-1.5 rounded-2xl transition-all cursor-pointer ${
                     isActive 
-                      ? "bg-brand-teal text-white shadow-lg shadow-brand-teal/20" 
-                      : "hover:bg-gray-150 dark:hover:bg-white/5 border border-transparent hover:border-gray-200 dark:hover:border-white/5 text-gray-700 dark:text-gray-200"
+                      ? "bg-teal-600 text-white shadow-sm" 
+                      : "hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/5 text-slate-700 dark:text-zinc-200"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
                     <Avatar name={usr.username} size="md" isOnline={isOnline} />
                     <div className="text-left font-sans min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <span className={`text-[12px] font-extrabold truncate ${isActive ? "text-white" : "text-gray-800 dark:text-gray-100"}`}>
+                        <span className={`text-[12px] font-extrabold truncate ${isActive ? "text-white" : "text-slate-900 dark:text-white"}`}>
                           {usr.name || usr.username}
                         </span>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse" : "bg-gray-350 dark:bg-zinc-700"}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-zinc-600"}`} />
                       </div>
-                      <p className={`text-[9.5px] font-mono font-bold ${isActive ? "text-white/80" : "text-brand-teal/90"} mt-0.5`}>
+                      <p className={`text-[9.5px] font-mono font-bold ${isActive ? "text-white/80" : "text-teal-600 dark:text-teal-400"} mt-0.5`}>
                         ID: {usr.uniqueId || "••••••••"}
                       </p>
-                      <p className={`text-[9px] truncate ${isActive ? "text-white/70" : "text-gray-400 dark:text-zinc-550"} mt-0.5`}>
+                      <p className={`text-[9px] truncate ${isActive ? "text-white/70" : "text-slate-500 dark:text-zinc-400"} mt-0.5`}>
                         {usr.bio || "Hey there! I am using SocketChat."}
                       </p>
                     </div>
@@ -590,7 +550,7 @@ export function ContactsMainArea({ onlineUsers = [], onInitiateCall }) {
             {/* Primary Button: Message */}
             <button 
               onClick={startPrivateChat}
-              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-white bg-brand-teal hover:bg-brand-teal/95 hover:shadow-md hover:shadow-brand-teal/20 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-2xl transition-colors cursor-pointer"
             >
               <FiMessageSquare size={14} />
               <span>Send Private Message</span>
@@ -600,14 +560,14 @@ export function ContactsMainArea({ onlineUsers = [], onInitiateCall }) {
             <div className="grid grid-cols-2 gap-3 w-full">
               <button 
                 onClick={() => handleStartCall("audio")}
-                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-gray-700 dark:text-zinc-200 bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200/50 dark:border-white/5 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-gray-700 dark:text-zinc-200 bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 border border-gray-200/50 dark:border-white/5 rounded-2xl transition-colors cursor-pointer"
               >
                 <FiPhone size={14} />
                 <span>Voice Call</span>
               </button>
               <button 
                 onClick={() => handleStartCall("video")}
-                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-white bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 hover:shadow-md hover:shadow-purple-500/20 rounded-2xl transition-all duration-300 active:scale-98 cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl transition-colors cursor-pointer"
               >
                 <FiVideo size={14} />
                 <span>Video Call</span>
@@ -629,8 +589,8 @@ export function AnalyticsSidebar() {
   const items = ["Today", "Weekly", "Monthly", "All-time"];
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
-      <div className="h-16 px-4 flex items-center justify-between border-b border-brand-border-light dark:border-white/5">
+    <div className="w-full h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] font-sans">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)]">
         <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase">Analytics</span>
       </div>
       <div className="p-4 flex-1 overflow-y-auto custom-scrollbar">
@@ -680,7 +640,7 @@ export function AnalyticsMainArea() {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 sm:p-8 space-y-6">
         {/* Warning Alert Banner */}
         <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3 text-left">
-          <FiInfo className="text-amber-600 dark:text-amber-450 mt-0.5 flex-shrink-0" size={16} />
+          <FiInfo className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" size={16} />
           <div>
             <h5 className="text-[11px] font-extrabold text-amber-800 dark:text-amber-400 uppercase tracking-wide">
               Demo Analytics
@@ -765,8 +725,8 @@ export function CallsSidebar({ currentUser, onInitiateCall }) {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-brand-panel-dark border-r border-brand-border-light dark:border-white/5 font-sans">
-      <div className="h-16 px-4 flex items-center justify-between border-b border-brand-border-light dark:border-white/5">
+    <div className="w-full h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] font-sans">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)]">
         <span className="text-[12px] font-extrabold tracking-wider text-gray-800 dark:text-gray-100 uppercase">Recent Calls</span>
         <button 
           onClick={() => navigate("/calls?dial=true")}
@@ -1075,10 +1035,10 @@ export function SettingsMainArea({
             </div>
             
             <div className="space-y-1">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 {currentUser.name || currentUser.username}
               </h1>
-              <p className="text-[11px] text-gray-400 dark:text-zinc-555 font-medium font-sans">
+              <p className="text-[11px] text-slate-400 dark:text-zinc-400 font-medium font-sans">
                 {currentUser.email || `${currentUser.username}@socketchat.com`}
               </p>
             </div>
@@ -1095,18 +1055,18 @@ export function SettingsMainArea({
                   maxLength={120}
                   autoFocus
                   placeholder="What's on your mind?"
-                  className="w-full text-center py-2 px-3 text-xs rounded-xl bg-gray-50 dark:bg-white/5 border border-brand-teal/30 focus:border-brand-teal focus:outline-none text-gray-900 dark:text-white transition-all font-sans"
+                  className="w-full text-center py-2 px-3 text-xs rounded-xl bg-slate-50 dark:bg-white/5 border border-teal-500/30 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-white transition-all font-sans"
                 />
                 <div className="flex items-center justify-center gap-1.5">
                   <button
                     onClick={() => setEditing(false)}
-                    className="px-2.5 py-1 text-[9px] font-semibold text-gray-450 hover:text-gray-655 dark:hover:text-zinc-350 cursor-pointer"
+                    className="px-2.5 py-1 text-[9px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={onSave}
-                    className="px-3 py-1 text-[9px] font-bold bg-brand-teal text-white rounded-lg cursor-pointer hover:bg-brand-teal/90 transition shadow-sm"
+                    className="px-3 py-1 text-[9px] font-bold bg-teal-600 text-white rounded-lg cursor-pointer hover:bg-teal-700 transition shadow-sm"
                   >
                     Save
                   </button>
@@ -1116,7 +1076,7 @@ export function SettingsMainArea({
               <div className="group relative inline-block">
                 <p 
                   onClick={() => setEditing(true)}
-                  className="text-xs text-gray-655 dark:text-gray-300 leading-relaxed cursor-pointer hover:text-brand-teal dark:hover:text-brand-teal transition-colors px-4 italic font-sans"
+                  className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed cursor-pointer hover:text-teal-600 dark:hover:text-teal-400 transition-colors px-4 italic font-sans"
                 >
                   "{settingsBio || "Add a status bio..."}"
                 </p>

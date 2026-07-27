@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function SkeletonLoader({ variant = "chatList", count = 3 }) {
-  const pulseClass = "animate-pulse bg-gray-200 dark:bg-zinc-700/80 rounded";
+  const pulseClass = "animate-pulse bg-slate-200 dark:bg-[#0E1117]/60 border border-slate-300 dark:border-[rgba(255,255,255,0.05)] rounded-[12px]";
 
   if (variant === "chatList") {
     return (

@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { FiClock, FiFileText, FiEye, FiUsers, FiBarChart2, FiVideo } from "react-icons/fi";
+import { MessageSquare, Folder, Radio, Users, BarChart2, Video } from "lucide-react";
+import { motion } from "framer-motion";
 import Avatar from "../common/Avatar";
 import Tooltip from "../common/Tooltip";
 import ThemeSwitcher from "../common/ThemeSwitcher";
@@ -12,45 +13,51 @@ export default function LeftNavDock({ theme, toggleTheme, onOpenSettings }) {
   const navigate = useNavigate();
 
   const navItems = [
-    { icon: <FiClock size={18} />, label: "Chats History", path: "/chat" },
-    { icon: <FiFileText size={18} />, label: "Files", path: "/files" },
-    { icon: <FiEye size={18} />, label: "Channels", path: "/channels" },
-    { icon: <FiUsers size={18} />, label: "Contacts", path: "/contacts" },
-    { icon: <FiBarChart2 size={18} />, label: "Analytics", path: "/analytics" },
-    { icon: <FiVideo size={18} />, label: "Calls", path: "/calls" }
+    { icon: <MessageSquare className="w-5 h-5" />, label: "Chats History", path: "/chat" },
+    { icon: <Folder className="w-5 h-5" />, label: "Files", path: "/files" },
+    { icon: <Radio className="w-5 h-5" />, label: "Channels", path: "/channels" },
+    { icon: <Users className="w-5 h-5" />, label: "Contacts", path: "/contacts" },
+    { icon: <BarChart2 className="w-5 h-5" />, label: "Analytics", path: "/analytics" },
+    { icon: <Video className="w-5 h-5" />, label: "Calls", path: "/calls" },
   ];
 
   return (
-    <div className="w-16 h-full flex flex-col justify-between items-center py-5 border-r border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-sec-dark flex-shrink-0 relative z-10">
-      {/* Brand Logo */}
-      <div 
+    <div className="w-16 h-full flex flex-col justify-between items-center py-5 border-r border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl flex-shrink-0 relative z-20 select-none">
+      {/* Brand Logo with Glow */}
+      <div
         onClick={() => navigate("/chat")}
-        className="flex flex-col items-center select-none cursor-pointer"
+        className="flex flex-col items-center cursor-pointer group"
       >
-        <div className="w-8 h-8 rounded-xl bg-brand-teal text-white flex items-center justify-center font-bold shadow-md shadow-brand-teal/20">
+        <div
+          className="w-9 h-9 rounded-[14px] bg-[#0D9488] text-white flex items-center justify-center font-bold shadow-sm transition-colors duration-200"
+        >
           ▲
         </div>
       </div>
 
       {/* Navigation Icons */}
-      <div className="flex flex-col gap-6 w-full items-center">
+      <div className="flex flex-col gap-3 w-full items-center px-2">
         {navItems.map((item, idx) => {
-          const isActive = item.path === "/chat"
-            ? (location.pathname.startsWith("/chat") || location.pathname.startsWith("/archived"))
-            : location.pathname.startsWith(item.path);
+          const isActive =
+            item.path === "/chat"
+              ? location.pathname.startsWith("/chat") || location.pathname.startsWith("/archived")
+              : location.pathname.startsWith(item.path);
+
           return (
             <Tooltip key={idx} text={item.label} position="right">
               <button
                 onClick={() => navigate(item.path)}
-                className={`p-2.5 rounded-xl transition-all duration-200 cursor-pointer relative flex items-center justify-center ${
+                className={`w-11 h-11 rounded-[16px] transition-colors duration-200 cursor-pointer relative flex items-center justify-center ${
                   isActive
-                    ? "bg-brand-teal/10 text-brand-teal"
-                    : "text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-white/5"
+                    ? "bg-[#0D9488]/15 text-[#0D9488] shadow-none"
+                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-white/5"
                 }`}
               >
-                {/* Active vertical bar on the left */}
+                {/* Active indicator pill */}
                 {isActive && (
-                  <span className="absolute left-0 top-1/4 bottom-1/4 w-0.5 bg-brand-teal rounded-r" />
+                  <span
+                    className="absolute -left-2 w-1.5 h-6 bg-[#0D9488] rounded-r-full shadow-none"
+                  />
                 )}
                 {item.icon}
               </button>
@@ -62,9 +69,9 @@ export default function LeftNavDock({ theme, toggleTheme, onOpenSettings }) {
       {/* Theme Switcher & Current User Avatar */}
       <div className="flex flex-col items-center gap-4">
         <ThemeSwitcher theme={theme} toggleTheme={toggleTheme} />
-        <div 
+        <div
           onClick={onOpenSettings}
-          className="cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          className="cursor-pointer relative p-0.5 rounded-full border border-transparent hover:border-slate-300 dark:hover:border-white/20 transition-colors shadow-sm"
         >
           <Avatar name={currentUser?.username} size="sm" showStatus={true} isOnline={true} />
         </div>

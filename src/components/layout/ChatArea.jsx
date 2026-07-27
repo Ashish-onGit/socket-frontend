@@ -25,6 +25,7 @@ import {
   FiSearch,
   FiMoreVertical,
   FiUsers,
+  FiMic,
 } from "react-icons/fi";
 import {
   addMessage,
@@ -47,6 +48,7 @@ import EmojiPicker from "emoji-picker-react";
 import ImageViewer from "../common/ImageViewer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useToast } from "../common/ToastContext";
+import EmptyChatState from "./empty-state/EmptyChatState";
 
 const MessageItem = React.memo(
   ({
@@ -163,22 +165,22 @@ const MessageItem = React.memo(
                 transform: `translateX(${dragX}px)`,
                 transition: isDragging.current ? "none" : "transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
-              className={`p-3 px-3.5 rounded-2xl relative text-xs md:text-sm leading-relaxed break-words font-sans cursor-grab active:cursor-grabbing ${
+              className={`p-3.5 px-4 rounded-[20px] relative text-xs md:text-sm leading-relaxed break-words font-sans cursor-grab active:cursor-grabbing transition-all duration-200 ${
                 msg.deleted
-                  ? "italic text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#121212] border border-dashed border-gray-200 dark:border-white/5"
+                  ? "italic text-slate-500 dark:text-zinc-500 bg-slate-100 dark:bg-[#0E1117]/40 border border-dashed border-slate-300 dark:border-[rgba(255,255,255,0.08)] rounded-[20px]"
                   : fromSelf
-                    ? "bg-[#DDE9F9] dark:bg-brand-teal/20 dark:text-teal-100 border border-transparent dark:border-brand-teal/20 text-gray-800 rounded-br-none"
-                    : "bg-white dark:bg-[#121212] text-gray-800 dark:text-gray-100 border border-brand-border-light dark:border-white/5 rounded-bl-none shadow-sm"
+                    ? "bg-[#0D9488] dark:bg-[#0F766E] text-white font-normal rounded-br-none border border-transparent"
+                    : "bg-white dark:bg-[#18181B] text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-white/5 rounded-bl-none shadow-none"
               }`}
             >
               {/* Quoted Reply Preview inside bubble */}
               {msg.replyTo && !msg.deleted && (
                 <div className={`mb-2 p-2 rounded-lg text-[10px] font-sans border-l-2 leading-snug truncate flex flex-col gap-0.5 select-none ${
                   fromSelf 
-                    ? "bg-black/5 dark:bg-black/25 border-brand-teal text-gray-700 dark:text-teal-200" 
-                    : "bg-gray-100/50 dark:bg-white/5 border-brand-teal text-gray-500 dark:text-zinc-400"
+                    ? "bg-black/20 border-white/60 text-white/90" 
+                    : "bg-gray-100 dark:bg-white/5 border-[#0D9488] text-gray-700 dark:text-zinc-300"
                 }`}>
-                  <span className="font-extrabold text-brand-teal flex items-center gap-1">
+                  <span className={`font-extrabold flex items-center gap-1 ${fromSelf ? "text-white" : "text-[#0D9488]"}`}>
                     <FiCornerUpLeft size={9} />
                     {msg.replyTo.sender}
                   </span>
@@ -265,7 +267,7 @@ const MessageItem = React.memo(
                   <Tooltip key={reactorName} text={reactorName}>
                     <span
                       onClick={() => onReact(msg, reactorEmoji)}
-                      className="text-[9px] bg-white dark:bg-zinc-800 border border-gray-100 dark:border-white/10 px-1.5 py-0.5 rounded-full shadow-sm cursor-pointer select-none hover:scale-115 transition-transform"
+                      className="text-[9.5px] bg-white dark:bg-[#0E1117]/90 backdrop-blur-md border border-slate-300 dark:border-[rgba(255,255,255,0.08)] px-2 py-0.5 rounded-full shadow-none cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-white/10 text-slate-900 dark:text-white transition-colors"
                     >
                       {reactorEmoji}
                     </span>
@@ -282,21 +284,21 @@ const MessageItem = React.memo(
             >
               <button
                 onClick={() => onReply(msg)}
-                className="p-1 rounded-lg bg-white dark:bg-zinc-800 text-gray-500 hover:text-gray-800 hover:bg-gray-100 border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer"
+                className="p-1.5 rounded-[12px] bg-white dark:bg-[#0E1117]/95 backdrop-blur-md text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] shadow-sm transition-all duration-200 cursor-pointer"
                 title="Reply"
               >
                 <FiCornerUpLeft size={11} />
               </button>
               <button
                 onClick={() => onCopy(msg)}
-                className="p-1 rounded-lg bg-white dark:bg-zinc-800 text-gray-500 hover:text-gray-800 hover:bg-gray-100 border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer"
+                className="p-1.5 rounded-[12px] bg-white dark:bg-[#0E1117]/95 backdrop-blur-md text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] shadow-sm transition-all duration-200 cursor-pointer"
                 title="Copy Message"
               >
                 <FiCopy size={11} />
               </button>
               <button
                 onClick={() => onReact(msg, "❤️")}
-                className="p-1 rounded-lg bg-white dark:bg-zinc-800 text-gray-500 hover:text-red-500 hover:bg-gray-100 border border-gray-100 dark:border-white/5 shadow-sm cursor-pointer"
+                className="p-1.5 rounded-[12px] bg-white dark:bg-[#0E1117]/95 backdrop-blur-md text-slate-600 dark:text-zinc-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] shadow-sm transition-all duration-200 cursor-pointer"
               >
                 ❤️
               </button>
@@ -785,26 +787,10 @@ export default function ChatArea({
 
   if (!activeConversation) {
     return (
-      <div className="flex-1 h-full flex flex-col items-center justify-center p-8 bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden">
-        {/* Custom Mesh Glow Backdrop (Vite-inspired cyan/purple radial overlay) */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-40 dark:opacity-20">
-          {/* Cyan Glow (top-left) */}
-          <div className="absolute -top-[10%] -left-[10%] w-[65%] h-[65%] rounded-full bg-[#06b6d4]/20 dark:bg-[#06b6d4]/10 blur-[110px] md:blur-[140px]" />
-          {/* Purple Glow (bottom-right) */}
-          <div className="absolute -bottom-[10%] -right-[10%] w-[65%] h-[65%] rounded-full bg-[#a855f7]/20 dark:bg-[#a855f7]/10 blur-[110px] md:blur-[140px]" />
-        </div>
-
-        <div className="text-center max-w-sm space-y-3 z-10 select-none">
-          <div className="text-5xl animate-float">💬</div>
-          <h3 className="text-sm font-extrabold text-gray-800 dark:text-gray-200 font-sans">
-            SocketChat Messaging
-          </h3>
-          <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed font-sans">
-            Start a premium, real-time messaging channel. Search or add a user
-            on the sidebar to begin.
-          </p>
-        </div>
-      </div>
+      <EmptyChatState
+        onlineUsers={onlineUsers}
+        currentUser={currentUser}
+      />
     );
   }
 
@@ -863,14 +849,20 @@ export default function ChatArea({
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden">
       {/* Custom Mesh Glow Backdrop (Vite-inspired cyan/purple radial overlay) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-40 dark:opacity-20">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-85 dark:opacity-75">
         {/* Cyan Glow (top-left) */}
-        <div className="absolute -top-[10%] -left-[10%] w-[65%] h-[65%] rounded-full bg-[#06b6d4]/20 dark:bg-[#06b6d4]/10 blur-[110px] md:blur-[140px]" />
+        <div 
+          className="absolute -top-[15%] -left-[15%] w-[80%] h-[80%] rounded-full bg-cyan-500/35 dark:bg-cyan-500/30"
+          style={{ filter: "blur(130px)" }}
+        />
         {/* Purple Glow (bottom-right) */}
-        <div className="absolute -bottom-[10%] -right-[10%] w-[65%] h-[65%] rounded-full bg-[#a855f7]/20 dark:bg-[#a855f7]/10 blur-[110px] md:blur-[140px]" />
+        <div 
+          className="absolute -bottom-[15%] -right-[15%] w-[80%] h-[80%] rounded-full bg-purple-500/40 dark:bg-purple-500/35"
+          style={{ filter: "blur(130px)" }}
+        />
       </div>
       {/* Chat Header (Responsive pill design & options) */}
-      <div className="h-16 px-6 flex items-center justify-between border-b border-brand-border-light dark:border-white/5 bg-white dark:bg-brand-panel-dark relative z-10 select-none">
+      <div className="h-16 px-6 flex items-center justify-between border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl relative z-10 select-none">
         
         {/* Left: User Info and Segmented Control (Tabs) */}
         <div className="flex items-center gap-3 min-w-0">
@@ -937,7 +929,7 @@ export default function ChatArea({
           <Dropdown
             trigger={
               <button
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white bg-brand-teal hover:bg-brand-teal/90 transition shadow-sm shadow-brand-teal/20 cursor-pointer flex-shrink-0"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-[14px] text-[11px] font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] transition-colors cursor-pointer flex-shrink-0"
               >
                 <FiPhone size={13} />
                 <span className="hidden sm:inline">Call</span>
@@ -1046,7 +1038,7 @@ export default function ChatArea({
                 <div key={dateStr} className="space-y-4">
                   {/* Date Separator */}
                   <div className="flex items-center justify-center my-6">
-                    <span className="text-[9px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest px-3 py-1 bg-gray-200/40 dark:bg-white/5 rounded-full font-sans">
+                    <span className="text-[9.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-widest px-3.5 py-1 bg-slate-200/80 dark:bg-[#0E1117]/80 backdrop-blur-md border border-slate-300 dark:border-[rgba(255,255,255,0.08)] rounded-full font-sans">
                       {formatDateLabel(dateStr)}
                     </span>
                   </div>
@@ -1100,36 +1092,36 @@ export default function ChatArea({
 
           {/* Typing indicators */}
           {typingUsers[activeConversation] && (
-            <div className="px-5 py-2 flex items-center gap-2 text-[10px] text-gray-400 dark:text-zinc-500 select-none">
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="px-6 py-2 flex items-center gap-2 text-[11px] text-[#00E5B0] select-none font-medium">
               <span className="font-bold">{activeConversation}</span> is typing
-              <div className="flex items-center gap-0.5 ml-1">
+              <div className="flex items-center gap-1 ml-1">
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-[#00E5B0] animate-bounce"
                   style={{ animationDelay: "0ms" }}
                 />
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-[#00E5B0] animate-bounce"
                   style={{ animationDelay: "150ms" }}
                 />
                 <span
-                  className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce"
+                  className="w-1.5 h-1.5 rounded-full bg-[#00E5B0] animate-bounce"
                   style={{ animationDelay: "300ms" }}
                 />
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Message Composer (Bottom Rounded Box with Safe Area support) */}
-          <div className="p-3 pb-4 md:pb-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-brand-border-light dark:border-white/5 bg-white/70 dark:bg-brand-panel-dark/80 backdrop-blur-md relative z-10">
+          {/* Message Composer (Bottom Glass Box with Safe Area support) */}
+          <div className="p-3 pb-4 md:pb-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl relative z-10">
             {replyTo && (
-              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-xs font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-white dark:bg-[#0E1117]/90 rounded-[16px] border-l-4 border-[#0D9488] text-xs font-sans text-slate-900 dark:text-white border border-slate-300 dark:border-[rgba(255,255,255,0.08)]">
                 <div className="min-w-0">
-                  <p className="font-bold text-brand-teal">Replying to {replyTo.sender}</p>
-                  <p className="truncate opacity-75">{replyTo.message}</p>
+                  <p className="font-bold text-[#0D9488]">Replying to {replyTo.sender}</p>
+                  <p className="truncate text-slate-500 dark:text-zinc-400">{replyTo.message}</p>
                 </div>
                 <button
                   onClick={() => setReplyTo(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                 >
                   <FiX size={15} />
                 </button>
@@ -1137,10 +1129,10 @@ export default function ChatArea({
             )}
 
             {editingMessage && (
-              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-amber-500 text-xs font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-white dark:bg-[#0E1117]/90 rounded-[16px] border-l-4 border-amber-500 text-xs font-sans text-slate-900 dark:text-white border border-slate-300 dark:border-[rgba(255,255,255,0.08)]">
                 <div className="min-w-0">
                   <p className="font-bold text-amber-500">Editing Message</p>
-                  <p className="truncate opacity-75">
+                  <p className="truncate text-slate-500 dark:text-zinc-400">
                     {editingMessage.message}
                   </p>
                 </div>
@@ -1149,7 +1141,7 @@ export default function ChatArea({
                     setEditingMessage(null);
                     setMessageText("");
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                 >
                   <FiX size={15} />
                 </button>
@@ -1157,24 +1149,24 @@ export default function ChatArea({
             )}
 
             {attachment && (
-              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-gray-100 dark:bg-zinc-800/80 rounded-xl border-l-4 border-brand-teal text-xs font-sans">
+              <div className="flex items-center justify-between p-2.5 mb-2.5 bg-white dark:bg-[#0E1117]/90 rounded-[16px] border-l-4 border-[#0D9488] text-xs font-sans text-slate-900 dark:text-white border border-slate-300 dark:border-[rgba(255,255,255,0.08)]">
                 <div className="flex items-center gap-2 min-w-0">
-                  <FiFileText className="text-brand-teal" size={15} />
+                  <FiFileText className="text-[#0D9488]" size={15} />
                   <div className="min-w-0">
-                    <p className="font-bold truncate">{attachment.name}</p>
-                    <p className="opacity-75">{attachment.size}</p>
+                    <p className="font-bold truncate text-slate-900 dark:text-white">{attachment.name}</p>
+                    <p className="text-slate-500 dark:text-zinc-400">{attachment.size}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setAttachment(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                 >
                   <FiX size={15} />
                 </button>
               </div>
             )}
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -1182,35 +1174,59 @@ export default function ChatArea({
                 className="hidden"
               />
 
-              <div className="flex-1 bg-gray-100 dark:bg-white/5 border border-transparent focus-within:border-brand-teal rounded-2xl px-4 py-2.5 flex items-center gap-2.5 animate-all">
+              <div className="flex-1 bg-white dark:bg-[#0E1117]/90 backdrop-blur-md border border-slate-300 dark:border-[rgba(255,255,255,0.08)] focus-within:border-slate-400 dark:focus-within:border-zinc-500/50 rounded-[24px] px-4 py-2 flex items-center gap-2.5 transition-colors duration-200">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-1.5 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer flex-shrink-0"
+                  title="Attach file"
+                >
+                  <FiPaperclip size={18} />
+                </button>
+
                 <textarea
                   ref={textareaRef}
                   value={messageText}
                   onChange={handleTextareaChange}
                   onKeyDown={handleKeyPress}
                   rows={1}
-                  placeholder="Write your message..."
-                  className="flex-1 bg-transparent border-none focus:outline-none text-[13px] md:text-sm text-gray-900 dark:text-white placeholder-gray-400 font-sans resize-none py-1.5 leading-normal max-h-24 custom-scrollbar"
+                  placeholder="Type a message... (Shift + Enter for new line)"
+                  className="flex-1 bg-transparent border-none focus:outline-none text-[13px] md:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 font-sans resize-none py-1.5 leading-normal max-h-24 custom-scrollbar"
                 />
 
                 <button
+                  type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer flex-shrink-0"
+                  className="p-1.5 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer flex-shrink-0"
+                  title="Emoji"
                 >
                   <FiSmile size={18} />
                 </button>
 
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition cursor-pointer flex-shrink-0"
+                  type="button"
+                  onClick={() => showToast("GIFs coming soon!", "info")}
+                  className="p-1 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer flex-shrink-0 font-extrabold text-[9.5px] bg-slate-200/60 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg px-2 py-1 border border-slate-300 dark:border-white/5"
+                  title="GIFs"
                 >
-                  <FiPaperclip size={18} />
+                  GIF
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => showToast("Voice recording coming soon!", "info")}
+                  className="p-1.5 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer flex-shrink-0"
+                  title="Voice Note"
+                >
+                  <FiMic size={18} />
                 </button>
               </div>
 
               <button
+                type="button"
                 onClick={handleSend}
-                className="p-3 rounded-full bg-brand-teal hover:bg-brand-teal/95 text-white shadow-md shadow-brand-teal/20 transition flex items-center justify-center cursor-pointer flex-shrink-0"
+                className="w-11 h-11 rounded-full bg-[#0D9488] hover:bg-[#0F766E] text-white transition-colors flex items-center justify-center cursor-pointer flex-shrink-0 font-bold"
+                title="Send Message"
               >
                 <FiSend size={16} />
               </button>
@@ -1328,8 +1344,9 @@ export default function ChatArea({
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-55 bg-white dark:bg-[#1C1C1E] rounded-t-[2rem] p-5 shadow-2xl flex flex-col font-sans max-h-[80vh] pb-safe border-t border-brand-border-light dark:border-white/5"
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-55 bg-white/95 dark:bg-[#0B0F14]/95 backdrop-blur-2xl rounded-t-[2rem] p-5 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.6)] flex flex-col font-sans max-h-[80vh] pb-safe border-t border-slate-200 dark:border-[rgba(255,255,255,0.08)]"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Notch */}
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-zinc-700 rounded-full mx-auto mb-4" />
@@ -1374,7 +1391,7 @@ export default function ChatArea({
               {/* Close Button */}
               <button
                 onClick={() => setIsParticipantsBSOpen(false)}
-                className="w-full py-3 text-xs font-bold text-center text-white bg-brand-teal hover:bg-brand-teal/90 rounded-xl cursor-pointer transition shadow-md shadow-brand-teal/20"
+                className="w-full py-3 text-xs font-bold text-center text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer transition-colors"
               >
                 Close
               </button>

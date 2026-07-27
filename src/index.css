@@ -11,16 +11,32 @@
   --color-brand-border-light: #EAEAEA;
   --color-brand-text-light: #1F2937;
   
-  --color-brand-bg-dark: #000000;
-  --color-brand-sec-dark: #000000;
-  --color-brand-panel-dark: #080808;
-  --color-brand-card-dark: #121212;
+  --color-brand-bg-dark: #050505;
+  --color-brand-sec-dark: #0B0F14;
+  --color-brand-panel-dark: #0B0F14;
+  --color-brand-card-dark: #111827;
   
   /* Primary accents */
-  --color-brand-teal: #0D9488;
+  --color-brand-teal: #00E5B0;
   --color-brand-teal-light: #CCFBF1;
   --color-brand-emerald: #10B981;
-  
+
+  /* Futuristic Premium SaaS Design System Tokens */
+  --color-bg: #050505;
+  --color-surface: #0B0F14;
+  --color-elevated: #111827;
+  --color-glass: rgba(255, 255, 255, 0.04);
+  --color-primary: #00E5B0;
+  --color-secondary: #5B8CFF;
+  --color-accent: #8B5CF6;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-success: #22C55E;
+  --color-text-muted: #8A8F98;
+  --color-text-primary: #FFFFFF;
+  --color-border-glass: rgba(255, 255, 255, 0.08);
+  --color-glow: rgba(0, 229, 176, 0.22);
+
   /* Animations */
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -49,8 +65,8 @@
 
 /* Custom Scrollbar Utilities */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -58,20 +74,21 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.25);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
+  transition: all 0.2s ease;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.45);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Hide default browser scrollbars if needed */
@@ -109,7 +126,6 @@
 }
 
 .premium-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
 }
 

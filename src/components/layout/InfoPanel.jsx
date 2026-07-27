@@ -90,17 +90,17 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
   ];
 
   return (
-    <div className="w-full md:w-80 h-full flex flex-col bg-white dark:bg-brand-panel-dark border-l border-brand-border-light dark:border-white/5 relative z-10 font-sans">
+    <div className="w-full md:w-80 h-full flex flex-col bg-slate-50/90 dark:bg-[#0B0F14]/90 backdrop-blur-xl border-l border-slate-200 dark:border-[rgba(255,255,255,0.08)] relative z-10 font-sans">
       
       {/* Header (Matches Reference image: > Shared files) */}
-      <div className="p-4 flex items-center gap-3">
+      <div className="p-4 flex items-center gap-3 border-b border-slate-200 dark:border-[rgba(255,255,255,0.08)] bg-transparent">
         <button
           onClick={onClose}
-          className="p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+          className="p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-white/5 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
         >
           <FiChevronLeft size={16} />
         </button>
-        <span className="text-xs font-extrabold tracking-wide text-gray-800 dark:text-gray-100">
+        <span className="text-xs font-extrabold tracking-wide text-slate-900 dark:text-white uppercase">
           Shared files
         </span>
       </div>
@@ -108,20 +108,20 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
       {/* Target card showcase */}
       <div className="p-6 flex flex-col items-center text-center">
         {/* Mock visual or avatar */}
-        <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-100 dark:border-white/10 select-none">
+        <div className="w-16 h-16 rounded-full overflow-hidden border border-[rgba(255,255,255,0.1)] select-none shadow-sm">
           <Avatar name={activeConversation} size="xl" showStatus={false} />
         </div>
-        <h4 className="text-xs font-bold text-gray-800 dark:text-gray-100 mt-3">
+        <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-3">
           {chatDetails?.recipient?.name || activeConversation}
         </h4>
         {chatDetails?.recipient?.name && (
-          <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">@{activeConversation}</p>
+          <p className="text-[9px] text-zinc-500 mt-0.5">@{activeConversation}</p>
         )}
-        <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-[10px] text-zinc-400 mt-0.5">
           {isOnline ? "Active now" : "Offline"}
         </p>
         {chatDetails?.recipient?.bio && (
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 italic mt-2.5 px-4 line-clamp-2">
+          <p className="text-[10px] text-zinc-400 italic mt-2.5 px-4 line-clamp-2">
             "{chatDetails.recipient.bio}"
           </p>
         )}
@@ -131,45 +131,39 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
       <div className="px-5 grid grid-cols-2 gap-3 mb-6">
         <button
           onClick={() => { setActiveMediaTab("files"); navigate("/files?category=all"); }}
-          className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-20 relative ${
+          className={`p-3.5 rounded-[20px] border text-left transition-colors duration-200 cursor-pointer flex flex-col justify-between h-20 relative ${
             activeMediaTab === "files"
-              ? "bg-[#CCFBF1]/60 dark:bg-brand-teal/20 border-brand-teal/30 text-brand-teal"
-              : "bg-gray-50 dark:bg-zinc-800/40 border-transparent text-gray-400"
+              ? "bg-slate-200 dark:bg-[#0E1117]/95 border-slate-400 dark:border-zinc-500 text-slate-900 dark:text-white shadow-sm"
+              : "bg-white/60 dark:bg-[#0E1117]/40 border-slate-200 dark:border-[rgba(255,255,255,0.08)] text-slate-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-[#0E1117]/70"
           }`}
         >
-          <span className="text-[9px] font-bold uppercase tracking-wider block">All files</span>
+          <span className="text-[9.5px] font-extrabold uppercase tracking-wider block">All files</span>
           <div className="flex items-end justify-between w-full mt-2">
-            <span className="text-lg font-extrabold text-gray-800 dark:text-gray-100">{totalFilesCount}</span>
+            <span className="text-lg font-extrabold text-slate-900 dark:text-white">{totalFilesCount}</span>
             <FiFolder size={18} className="opacity-80" />
           </div>
-          {activeMediaTab === "files" && (
-            <span className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-brand-teal" />
-          )}
         </button>
 
         <button
           onClick={() => { setActiveMediaTab("links"); navigate("/files?category=other"); }}
-          className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between h-20 relative ${
+          className={`p-3.5 rounded-[20px] border text-left transition-colors duration-200 cursor-pointer flex flex-col justify-between h-20 relative ${
             activeMediaTab === "links"
-              ? "bg-[#CCFBF1]/60 dark:bg-brand-teal/20 border-brand-teal/30 text-brand-teal"
-              : "bg-gray-50 dark:bg-zinc-800/40 border-transparent text-gray-400"
+              ? "bg-slate-200 dark:bg-[#0E1117]/95 border-slate-400 dark:border-zinc-500 text-slate-900 dark:text-white shadow-sm"
+              : "bg-white/60 dark:bg-[#0E1117]/40 border-slate-200 dark:border-[rgba(255,255,255,0.08)] text-slate-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-[#0E1117]/70"
           }`}
         >
-          <span className="text-[9px] font-bold uppercase tracking-wider block">All links</span>
+          <span className="text-[9.5px] font-extrabold uppercase tracking-wider block">All links</span>
           <div className="flex items-end justify-between w-full mt-2">
-            <span className="text-lg font-extrabold text-gray-800 dark:text-gray-100">{totalLinksCount}</span>
+            <span className="text-lg font-extrabold text-slate-900 dark:text-white">{totalLinksCount}</span>
             <span className="text-xs font-bold font-sans">🔗</span>
           </div>
-          {activeMediaTab === "links" && (
-            <span className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-brand-teal" />
-          )}
         </button>
       </div>
 
       {/* File type Section header */}
-      <div className="px-5 py-2 flex items-center justify-between text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider select-none border-t border-brand-border-light dark:border-white/5 pt-4">
+      <div className="px-5 py-2 flex items-center justify-between text-[10px] font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider select-none border-t border-slate-200 dark:border-[rgba(255,255,255,0.08)] pt-4">
         <span>File type</span>
-        <button className="text-gray-400 hover:text-gray-700">
+        <button className="text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-white transition">
           <FiMoreHorizontal size={14} />
         </button>
       </div>
@@ -183,41 +177,41 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
             <div
               key={idx}
               onClick={() => navigate(`/files?category=${cat.name.toLowerCase()}`)}
-              className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition duration-150 cursor-pointer group"
+              className="flex items-center justify-between p-3.5 rounded-[18px] bg-white/60 dark:bg-[#0E1117]/40 hover:bg-white dark:hover:bg-[#0E1117]/80 border border-transparent hover:border-slate-200 dark:hover:border-[rgba(255,255,255,0.08)] transition-all duration-200 cursor-pointer group"
             >
               <div className="flex items-center gap-3">
                 {/* Colored icon holder */}
-                <div className={`p-2 rounded-xl flex items-center justify-center ${cat.iconColor}`}>
-                  <FiFolder size={15} />
+                <div className={`p-2.5 rounded-[14px] flex items-center justify-center ${cat.iconColor}`}>
+                  <FiFolder size={16} />
                 </div>
                 <div className="text-left font-sans">
-                  <p className="text-[11px] font-bold text-gray-700 dark:text-gray-200">{cat.name}</p>
-                  <p className="text-[9px] text-gray-400 dark:text-zinc-500 mt-0.5">
+                  <p className="text-[11px] font-bold text-slate-900 dark:text-white">{cat.name}</p>
+                  <p className="text-[9px] text-zinc-500 mt-0.5">
                     {cat.count} files, {cat.size}
                   </p>
                 </div>
               </div>
 
-              <FiChevronRight size={14} className="text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors" />
+              <FiChevronRight size={14} className="text-slate-400 dark:text-zinc-500 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
             </div>
           ))}
         </div>
 
         {/* Shared Media Grid */}
         <div className="px-2">
-          <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider pl-1 block mb-3">
+          <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-wider pl-1 block mb-3">
             Recent Media
           </span>
           {sharedPhotos.length === 0 ? (
             <div className="grid grid-cols-3 gap-2 px-1">
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[9px] text-gray-400 font-medium">No media</div>
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-teal-500/5 to-emerald-500/5 dark:from-teal-500/10 dark:to-emerald-500/10 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[9px] text-gray-400 font-medium">No media</div>
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-pink-500/5 to-rose-500/5 dark:from-pink-500/10 dark:to-rose-500/10 border border-gray-100 dark:border-white/5 flex items-center justify-center text-[9px] text-gray-400 font-medium">No media</div>
+              <div className="aspect-square rounded-[16px] bg-slate-100 dark:bg-[#0E1117]/40 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[9px] text-slate-500 dark:text-zinc-600 font-medium">No media</div>
+              <div className="aspect-square rounded-[16px] bg-slate-100 dark:bg-[#0E1117]/40 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[9px] text-slate-500 dark:text-zinc-600 font-medium">No media</div>
+              <div className="aspect-square rounded-[16px] bg-slate-100 dark:bg-[#0E1117]/40 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[9px] text-slate-500 dark:text-zinc-600 font-medium">No media</div>
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2 px-1">
               {sharedPhotos.slice(-6).map((img, idx) => (
-                <a key={idx} href={img.fileUrl} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm block hover:scale-105 transition-transform duration-200">
+                <a key={idx} href={img.fileUrl} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-[16px] overflow-hidden border border-slate-200 dark:border-[rgba(255,255,255,0.08)] shadow-sm block hover:opacity-90 transition-opacity duration-200">
                   <img src={img.fileUrl} alt="Shared" className="w-full h-full object-cover" />
                 </a>
               ))}
@@ -227,31 +221,31 @@ export default function InfoPanel({ activeConversation, isOnline, onClose }) {
 
         {/* User Profile */}
         <div className="px-2">
-          <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider pl-1 block mb-3">
+          <span className="text-[10px] font-extrabold text-slate-500 dark:text-zinc-400 uppercase tracking-wider pl-1 block mb-3">
             User Profile
           </span>
-          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/20 border border-gray-100 dark:border-white/5 space-y-3 font-sans text-[11px]">
+          <div className="p-4 rounded-[20px] bg-white dark:bg-[#0E1117]/60 border border-slate-200 dark:border-[rgba(255,255,255,0.08)] space-y-3.5 font-sans text-[11px] shadow-sm">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 font-medium">User ID</span>
-              <span className="font-mono font-bold text-gray-800 dark:text-gray-200 select-all cursor-pointer" title="Select and copy User ID">
+              <span className="text-slate-500 dark:text-zinc-500 font-medium">User ID</span>
+              <span className="font-mono font-bold text-slate-700 dark:text-zinc-300 select-all cursor-pointer" title="Select and copy User ID">
                 {chatDetails?.recipient?._id || "••••••••"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 font-medium">Username</span>
-              <span className="font-semibold text-gray-850 dark:text-gray-200">
+              <span className="text-slate-500 dark:text-zinc-500 font-medium">Username</span>
+              <span className="font-semibold text-slate-900 dark:text-white">
                 @{activeConversation}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 font-medium">Calling ID</span>
-              <span className="font-mono font-bold text-brand-teal select-all cursor-pointer" title="Select and copy Call ID">
+              <span className="text-slate-500 dark:text-zinc-500 font-medium">Calling ID</span>
+              <span className="font-mono font-bold text-[#0D9488] select-all cursor-pointer" title="Select and copy Call ID">
                 {chatDetails?.recipient?.uniqueId || "••••••••"}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 font-medium">Status</span>
-              <span className={`font-bold ${isOnline ? "text-emerald-500" : "text-gray-400"}`}>
+              <span className="text-slate-500 dark:text-zinc-500 font-medium">Status</span>
+              <span className={`font-bold ${isOnline ? "text-[#0D9488]" : "text-slate-500 dark:text-zinc-500"}`}>
                 {isOnline ? "Available" : "Offline"}
               </span>
             </div>

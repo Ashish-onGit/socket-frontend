@@ -48,16 +48,16 @@ export default function Dropdown({ trigger, items, align = "right" }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -5 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -5 }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
             onClick={(e) => e.stopPropagation()}
-            className={`absolute ${alignClasses} mt-2 w-48 rounded-xl shadow-lg ring-1 ring-black/5 bg-white dark:bg-brand-card-dark border border-brand-border-light dark:border-white/10 premium-card z-50 overflow-hidden py-1`}
+            className={`absolute ${alignClasses} mt-2 w-48 rounded-[16px] shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.6)] bg-white dark:bg-[#0E1117]/95 backdrop-blur-2xl border border-slate-200 dark:border-[rgba(255,255,255,0.08)] z-50 overflow-hidden py-1.5 text-slate-900 dark:text-white`}
           >
             {items.map((item, idx) => {
               if (item.divider) {
-                return <div key={idx} className="border-t border-gray-100 dark:border-white/5 my-1" />;
+                return <div key={idx} className="border-t border-slate-200 dark:border-[rgba(255,255,255,0.08)] my-1" />;
               }
               return (
                 <button
@@ -69,8 +69,8 @@ export default function Dropdown({ trigger, items, align = "right" }) {
                   }}
                   className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-xs text-left transition-colors cursor-pointer ${
                     item.danger
-                      ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
-                      : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5"
+                      ? "text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
+                      : "text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
                   }`}
                 >
                   {item.icon && <span className="text-sm opacity-80">{item.icon}</span>}

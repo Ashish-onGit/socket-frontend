@@ -319,7 +319,7 @@ export default function CallOverlay({
                 style={{
                   transform: `translate(${position.x}px, ${position.y}px)`,
                 }}
-                className="absolute bottom-6 right-6 w-28 h-36 rounded-2xl overflow-hidden border border-white/15 shadow-2xl z-30 bg-[#121214] cursor-grab active:cursor-grabbing select-none touch-none hover:shadow-brand-teal/20 transition-all hover:scale-105"
+                className="absolute bottom-6 right-6 w-28 h-36 rounded-2xl overflow-hidden border border-white/15 shadow-2xl z-30 bg-[#121214] cursor-grab active:cursor-grabbing select-none touch-none hover:border-white/30 transition-colors"
                 title="Tap to swap screens"
               >
                 <video
