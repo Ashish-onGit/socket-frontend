@@ -10,6 +10,7 @@ import { useToast } from "./components/common/ToastContext";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { TermsOfService, PrivacyPolicy } from "./components/common/TermsAndPrivacy";
 import { NotFoundPage, OfflineScreen } from "./components/common/ErrorPages";
+import { ScreenShareProvider } from "./context/ScreenShareContext";
 import "./index.css";
 
 const backendURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
@@ -261,12 +262,14 @@ function App() {
         <Route 
           element={
             user ? (
-              <MainLayout
-                socket={socket}
-                onLogout={onLogout}
-                theme={theme}
-                toggleTheme={toggleTheme}
-              />
+              <ScreenShareProvider socket={socket}>
+                <MainLayout
+                  socket={socket}
+                  onLogout={onLogout}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                />
+              </ScreenShareProvider>
             ) : (
               <Navigate to="/login" replace />
             )

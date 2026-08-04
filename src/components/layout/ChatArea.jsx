@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  FiMonitor,
   FiPhone,
   FiVideo,
   FiTrash2,
@@ -49,6 +50,9 @@ import ImageViewer from "../common/ImageViewer";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useToast } from "../common/ToastContext";
 import EmptyChatState from "./empty-state/EmptyChatState";
+import { useScreenShareContext } from "../../context/ScreenShareContext";
+import ScreenShareViewer from "../screenshare/ScreenShareViewer";
+import ScreenShareIncoming from "../screenshare/ScreenShareIncoming";
 
 const MessageItem = React.memo(
   ({
@@ -342,6 +346,9 @@ export default function ChatArea({
   const messages = chatDetails?.messages || [];
   const isOnline = onlineUsers.includes(activeConversation);
 
+  // Screen Share Context
+  const { startShare, isSharing, isViewing } = useScreenShareContext();
+
   const messagesEndRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -420,7 +427,7 @@ export default function ChatArea({
   const [activeProfile, setActiveProfile] = useState(null);
   useEffect(() => {
     const fetchActiveProfile = async () => {
-      if (!activeConversation) {
+      if (!activeConversation || !currentUser?.token) {
         setActiveProfile(null);
         return;
       }
@@ -848,6 +855,9 @@ export default function ChatArea({
 
   return (
     <div className="flex-1 h-full flex flex-col bg-brand-bg-light dark:bg-brand-bg-dark relative overflow-hidden">
+      <ScreenShareIncoming />
+      <ScreenShareViewer />
+      
       {/* Custom Mesh Glow Backdrop (Vite-inspired cyan/purple radial overlay) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none opacity-85 dark:opacity-75">
         {/* Cyan Glow (top-left) */}
@@ -924,6 +934,29 @@ export default function ChatArea({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Share Screen Button */}
+          <div className="hidden md:block">
+            <Tooltip content={isSharing || isViewing ? "Screen sharing is active" : "Share Screen"}>
+              <button
+                onClick={() => {
+                  if (!activeProfile?.uniqueId) {
+                    showToast("User does not have a valid ID for sharing.", "error");
+                    return;
+                  }
+                  startShare(activeProfile._id);
+                }}
+                disabled={isSharing || isViewing}
+                className={`p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${
+                  isSharing || isViewing 
+                    ? "text-gray-300 dark:text-gray-600 bg-gray-100/50 dark:bg-white/5 cursor-not-allowed" 
+                    : "text-gray-500 hover:text-brand-teal hover:bg-brand-teal/10 dark:text-gray-400 dark:hover:text-teal-400"
+                }`}
+              >
+                <FiMonitor size={16} />
+              </button>
+            </Tooltip>
+          </div>
 
           {/* Call Dropdown — Voice or Video selection */}
           <Dropdown
